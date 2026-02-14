@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from pathlib import Path
@@ -21,6 +23,71 @@ from av.pipeline.ffmpeg import extract_audio, extract_frames, get_video_info
 from av.providers.openai import OpenAICaptioner, OpenAIEmbedder, OpenAITranscriber
 from av.utils.hashing import file_hash
 from av.utils.principles import load_principles
+
+
+def _chunk_seconds_for_audio(audio_path: Path, target_bytes: int = MAX_AUDIO_CHUNK_BYTES - (1 * 1024 * 1024)) -> int:
+    size = audio_path.stat().st_size
+    if size <= 0:
+        return 600
+    # wav from ffmpeg is roughly constant bitrate; estimate seconds per chunk
+    meta = get_video_info(audio_path)
+    duration = max(meta.duration_sec, 1.0)
+    bytes_per_sec = size / duration
+    secs = int(max(60, target_bytes / max(bytes_per_sec, 1.0)))
+    return min(secs, 1200)
+
+
+def _split_audio(audio_path: Path, segment_sec: int) -> list[Path]:
+    out_dir = Path(tempfile.mkdtemp(prefix="av_audio_chunks_"))
+    out_pattern = out_dir / "chunk_%03d.wav"
+    cmd = [
+        "ffmpeg", "-i", str(audio_path),
+        "-f", "segment",
+        "-segment_time", str(segment_sec),
+        "-c", "copy",
+        "-y",
+        str(out_pattern),
+    ]
+    subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=600)
+    return sorted(out_dir.glob("chunk_*.wav"))
+
+
+def _transcribe_with_chunking(transcriber: OpenAITranscriber, audio_path: Path) -> list:
+    """Transcribe single file or chunk to stay under provider upload limits."""
+    if audio_path.stat().st_size <= MAX_AUDIO_CHUNK_BYTES:
+        return transcriber.transcribe(audio_path)
+
+    seg_sec = _chunk_seconds_for_audio(audio_path)
+    chunks = _split_audio(audio_path, seg_sec)
+    if not chunks:
+        return transcriber.transcribe(audio_path)
+
+    all_segments = []
+    offset = 0.0
+    for ch in chunks:
+        try:
+            ch_dur = get_video_info(ch).duration_sec
+        except Exception:
+            ch_dur = float(seg_sec)
+        try:
+            ch_segments = transcriber.transcribe(ch)
+            for seg in ch_segments:
+                seg.start_sec += offset
+                seg.end_sec += offset
+                all_segments.append(seg)
+        finally:
+            try:
+                ch.unlink(missing_ok=True)
+            except Exception:
+                pass
+        offset += ch_dur
+    try:
+        shutil.rmtree(chunks[0].parent, ignore_errors=True)
+    except Exception:
+        pass
+    return all_segments
+
+
 
 
 def ingest_video(
@@ -142,11 +209,11 @@ def ingest_video(
                 audio_size = audio_path.stat().st_size
                 if audio_size > MAX_AUDIO_CHUNK_BYTES:
                     print(
-                        f"  Warning: Audio is {audio_size / 1024 / 1024:.0f}MB (>{MAX_AUDIO_CHUNK_BYTES / 1024 / 1024:.0f}MB limit). Sending as-is; API may truncate.",
+                        f"  Audio is {audio_size / 1024 / 1024:.0f}MB (>{MAX_AUDIO_CHUNK_BYTES / 1024 / 1024:.0f}MB). Using chunked transcription.",
                         file=sys.stderr,
                     )
 
-                segments = transcriber.transcribe(audio_path)
+                segments = _transcribe_with_chunking(transcriber, audio_path)
                 print(f"  Got {len(segments)} transcript segments.", file=sys.stderr)
 
                 for seg in segments:

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -102,6 +103,57 @@ def _client(config: AVConfig) -> OpenAI:
     return OpenAI(**kwargs)
 
 
+
+def _extract_codex_answer(stdout: str) -> str:
+    lines = [ln.rstrip() for ln in stdout.splitlines()]
+    if not lines:
+        return ""
+    # Prefer block after the literal "codex" marker up to "tokens used"
+    for i, ln in enumerate(lines):
+        if ln.strip() == "codex":
+            buf = []
+            for ln2 in lines[i + 1 :]:
+                if ln2.strip().startswith("tokens used"):
+                    break
+                if ln2.strip():
+                    buf.append(ln2)
+            if buf:
+                return "\n".join(buf).strip()
+    # Fallback: last meaningful non-log line
+    for ln in reversed(lines):
+        t = ln.strip()
+        if not t:
+            continue
+        if t.startswith(("Reading prompt", "OpenAI Codex", "model:", "provider:", "approval:", "sandbox:", "session id:", "mcp startup:", "thinking", "user", "--------", "tokens used")):
+            continue
+        return t
+    return ""
+
+
+def _codex_cli_caption(prompt: str, frame_paths: list[Path]) -> str:
+    cmd = [
+        "codex", "exec",
+        "--model", "gpt-5.2",
+        "--skip-git-repo-check",
+        "--dangerously-bypass-approvals-and-sandbox",
+    ]
+    for fp in frame_paths:
+        cmd.extend(["-i", str(fp)])
+    cmd.append("-")
+
+    proc = subprocess.run(
+        cmd,
+        input=prompt,
+        text=True,
+        capture_output=True,
+        timeout=240,
+    )
+    if proc.returncode != 0:
+        raise APIError(f"Codex fallback failed (exit {proc.returncode}): {proc.stderr.strip()}", provider="codex")
+    text = _extract_codex_answer(proc.stdout)
+    return text.strip()
+
+
 class OpenAITranscriber(TranscriberProvider):
     def __init__(self, config: AVConfig):
         self.config = config
@@ -173,6 +225,18 @@ class OpenAICaptioner(CaptionerProvider):
                 text = response.choices[0].message.content or ""
                 captions.append(Caption(timestamp_sec=ts, text=text.strip(), frame_path=str(fp)))
             except Exception as e:
+                err = str(e)
+                if "Missing scopes: model.request" in err or "model_not_found" in err:
+                    try:
+                        fallback = _codex_cli_caption(
+                            prompt or "Describe this frame in one concise sentence with concrete actions and key objects.",
+                            [fp],
+                        )
+                        if fallback:
+                            captions.append(Caption(timestamp_sec=ts, text=fallback, frame_path=str(fp)))
+                            continue
+                    except Exception as fe:
+                        print(f"\n  Warning: codex fallback failed at {ts:.1f}s: {fe}", file=sys.stderr)
                 print(f"\n  Warning: caption failed for frame at {ts:.1f}s: {e}", file=sys.stderr)
         if total > 0:
             print(file=sys.stderr)  # newline after \r progress
@@ -194,12 +258,18 @@ class OpenAICaptioner(CaptionerProvider):
                 "image_url": {"url": f"data:image/{ext};base64,{img_data}"},
             })
 
-        response = self.client.chat.completions.create(
-            model=self.config.vision_model,
-            messages=[{"role": "user", "content": content}],
-            max_tokens=500,
-        )
-        return (response.choices[0].message.content or "").strip()
+        try:
+            response = self.client.chat.completions.create(
+                model=self.config.vision_model,
+                messages=[{"role": "user", "content": content}],
+                max_tokens=500,
+            )
+            return (response.choices[0].message.content or "").strip()
+        except Exception as e:
+            err = str(e)
+            if "Missing scopes: model.request" in err or "model_not_found" in err:
+                return _codex_cli_caption(prompt, frame_paths)
+            raise
 
 
 class OpenAIEmbedder(EmbedderProvider):
