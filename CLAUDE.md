@@ -182,5 +182,5 @@ Near-term priorities for contributors:
 - [ ] Cross-video search improvements (search across all indexed videos at once)
 - [ ] Streaming ingest progress (SSE-style output for long videos)
 - [ ] Profile presets for dense captioning (security, retail, meeting, etc.)
-- [ ] CI/CD with GitHub Actions (lint + test on PR)
-- [ ] PyPI publish workflow
+- [x] CI/CD with GitHub Actions (lint + test on PR) — `.github/workflows/ci.yml`
+- [x] PyPI publish workflow — `.github/workflows/publish.yml` + `PUBLISHING.md`

@@ -8,3 +8,4 @@ build/
 *.db
 .DS_Store
 .pytest_cache/
+PUBLISHING.md
