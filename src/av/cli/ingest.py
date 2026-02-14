@@ -29,6 +29,11 @@ def register(app: typer.Typer) -> None:
         dense_vision: bool = typer.Option(False, "--dense-vision", help="Enable dense visual captioning timeline"),
         principles: str = typer.Option(None, "--principles", help="Path to principles file (.yaml/.json/.txt)"),
         dense_output_dir: str = typer.Option(None, "--dense-output-dir", help="Directory for dense caption outputs (.jsonl/.md)"),
+        topic: str = typer.Option(
+            "general", "--topic",
+            help="Topic for captioning: security, traffic, warehouse, retail, meeting, general, or a custom description",
+        ),
+        frame_captions: bool = typer.Option(False, "--frame-captions", help="Legacy per-frame captioning (old --captions behavior)"),
         db: str = typer.Option(None, "--db", help="Database path override"),
     ) -> None:
         """Ingest video file(s) into the av index."""
@@ -72,6 +77,8 @@ def register(app: typer.Typer) -> None:
                     dense_vision=dense_vision,
                     principles_path=Path(principles).expanduser().resolve() if principles else None,
                     dense_output_dir=Path(dense_output_dir).expanduser().resolve() if dense_output_dir else None,
+                    topic=topic,
+                    frame_captions=frame_captions,
                 )
                 results.append(result)
             except AVError as e:

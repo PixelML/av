@@ -21,6 +21,14 @@ class Caption:
     frame_path: str | None = None
 
 
+@dataclass
+class ChunkCaption:
+    start_sec: float
+    end_sec: float
+    text: str
+    frame_count: int
+
+
 class TranscriberProvider(ABC):
     @abstractmethod
     def transcribe(self, audio_path: Path) -> list[TranscriptSegment]:
@@ -33,6 +41,12 @@ class CaptionerProvider(ABC):
         self, frame_paths: list[Path], timestamps: list[float]
     ) -> list[Caption]:
         ...
+
+    def caption_chunk(
+        self, frame_paths: list[Path], timestamps: list[float], prompt: str
+    ) -> str:
+        """Caption multiple frames as a single temporal chunk. Returns raw VLM text."""
+        raise NotImplementedError("caption_chunk not implemented for this provider")
 
 
 class EmbedderProvider(ABC):

@@ -14,6 +14,7 @@ from av.core.constants import LONG_VIDEO_WARN_MINUTES, MAX_AUDIO_CHUNK_BYTES
 from av.core.exceptions import IngestError
 from av.db.models import ArtifactRecord, VideoRecord
 from av.db.repository import Repository
+from av.pipeline.cascade import run_cascade
 from av.pipeline.chunker import chunk_artifacts
 from av.pipeline.dense_caption import export_dense_outputs, render_dense_prompt
 from av.pipeline.ffmpeg import extract_audio, extract_frames, get_video_info
@@ -36,6 +37,8 @@ def ingest_video(
     dense_vision: bool = False,
     principles_path: Path | None = None,
     dense_output_dir: Path | None = None,
+    topic: str = "general",
+    frame_captions: bool = False,
 ) -> dict:
     """Ingest a single video file. Returns JSON-serializable result dict."""
     start_time = time.time()
@@ -171,11 +174,32 @@ def ingest_video(
             warnings.append(msg)
             print(f"  {msg}", file=sys.stderr)
 
-        # Step 5: Captions (best-effort)
+        # Step 5: Captions — cascade (default) or legacy per-frame
+        cascade_artifacts: list[ArtifactRecord] = []
         if captions:
             try:
+                l0, l1, l2 = run_cascade(
+                    path,
+                    video_id,
+                    config,
+                    meta.duration_sec,
+                    topic=topic,
+                )
+                cascade_artifacts = l0 + l1 + l2
+                if cascade_artifacts:
+                    repo.insert_artifacts_batch(cascade_artifacts)
+                    artifacts_count += len(cascade_artifacts)
+                    # Also track captions for embedding
+                    caption_artifacts.extend(cascade_artifacts)
+            except Exception as e:
+                msg = f"Cascade captioning skipped: {e}"
+                warnings.append(msg)
+                print(f"  Warning: {msg}", file=sys.stderr)
+
+        if frame_captions:
+            try:
                 print(
-                    f"  Captioning enabled (fps={fps_sample}, max={max_frames}). This uses the vision API.",
+                    f"  Frame captioning enabled (fps={fps_sample}, max={max_frames}). This uses the vision API.",
                     file=sys.stderr,
                 )
                 frames = extract_frames(path, fps_sample=fps_sample, max_frames=max_frames)
@@ -200,9 +224,10 @@ def ingest_video(
                             )
                         )
 
-                    if caption_artifacts:
-                        repo.insert_artifacts_batch(caption_artifacts)
-                        artifacts_count += len(caption_artifacts)
+                    fc_arts = [a for a in caption_artifacts if a not in cascade_artifacts]
+                    if fc_arts:
+                        repo.insert_artifacts_batch(fc_arts)
+                        artifacts_count += len(fc_arts)
             except Exception as e:
                 msg = f"Frame captioning skipped: {e}"
                 warnings.append(msg)

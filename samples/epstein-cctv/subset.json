@@ -1,0 +1,82 @@
+[
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00028842.mp4",
+    "basename": "EFTA00028842.mp4",
+    "usize": 764181,
+    "csize": 415557,
+    "offset": 1163325131,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00029996.mp4",
+    "basename": "EFTA00029996.mp4",
+    "usize": 2298221,
+    "csize": 2234830,
+    "offset": 1242495609,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00029997.mp4",
+    "basename": "EFTA00029997.mp4",
+    "usize": 4736383,
+    "csize": 4586395,
+    "offset": 1247472074,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00033280.mp4",
+    "basename": "EFTA00033280.mp4",
+    "usize": 23782341,
+    "csize": 22156876,
+    "offset": 7592393738,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00033368.mp4",
+    "basename": "EFTA00033368.mp4",
+    "usize": 23786089,
+    "csize": 22133730,
+    "offset": 9385051262,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00033246.mp4",
+    "basename": "EFTA00033246.mp4",
+    "usize": 23802589,
+    "csize": 22153575,
+    "offset": 6274092148,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00033226.mp4",
+    "basename": "EFTA00033226.mp4",
+    "usize": 23816363,
+    "csize": 22163816,
+    "offset": 6684669960,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00033244.mp4",
+    "basename": "EFTA00033244.mp4",
+    "usize": 26472108,
+    "csize": 24831282,
+    "offset": 6321102603,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00033396.mp4",
+    "basename": "EFTA00033396.mp4",
+    "usize": 26832008,
+    "csize": 25184118,
+    "offset": 9583819079,
+    "compression": 8
+  },
+  {
+    "fname": "VOL00008/NATIVES/0001/EFTA00033262.mp4",
+    "basename": "EFTA00033262.mp4",
+    "usize": 32170013,
+    "csize": 30546693,
+    "offset": 7679075009,
+    "compression": 8
+  }
+]

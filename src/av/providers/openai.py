@@ -14,6 +14,7 @@ from av.core.exceptions import APIError
 from av.providers.base import (
     Caption,
     CaptionerProvider,
+    ChunkCaption,
     EmbedderProvider,
     LLMProvider,
     TranscriberProvider,
@@ -178,6 +179,29 @@ class OpenAICaptioner(CaptionerProvider):
         return captions
 
 
+    def caption_chunk(
+        self, frame_paths: list[Path], timestamps: list[float], prompt: str
+    ) -> str:
+        """Caption multiple frames as a single temporal chunk via one multi-image API call."""
+        content: list[dict] = [{"type": "text", "text": prompt}]
+        for fp in frame_paths:
+            img_data = base64.b64encode(fp.read_bytes()).decode()
+            ext = fp.suffix.lstrip(".").lower()
+            if ext == "jpg":
+                ext = "jpeg"
+            content.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:image/{ext};base64,{img_data}"},
+            })
+
+        response = self.client.chat.completions.create(
+            model=self.config.vision_model,
+            messages=[{"role": "user", "content": content}],
+            max_tokens=500,
+        )
+        return (response.choices[0].message.content or "").strip()
+
+
 class OpenAIEmbedder(EmbedderProvider):
     def __init__(self, config: AVConfig):
         self.config = config
@@ -234,6 +258,20 @@ class OpenAILLM(LLMProvider):
             return (response.choices[0].message.content or "").strip()
         except Exception as e:
             raise APIError(f"Chat completion failed: {e}", provider="openai") from e
+
+    def summarize(self, system_prompt: str, user_content: str) -> str:
+        """Generic system/user LLM call for cascade summarization."""
+        try:
+            response = self.client.chat.completions.create(
+                model=self.config.chat_model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_content},
+                ],
+            )
+            return (response.choices[0].message.content or "").strip()
+        except Exception as e:
+            raise APIError(f"Summarization failed: {e}", provider="openai") from e
 
 
 # --- System prompts ---
