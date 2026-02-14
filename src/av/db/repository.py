@@ -21,6 +21,16 @@ from av.db.models import (
 from av.db.schema import migrate
 
 
+
+
+def _sanitize_fts_query(query: str) -> str:
+    # Remove FTS special chars that commonly break user natural language (e.g., 00:30)
+    cleaned = query
+    for ch in [":", "\"", "(", ")", "[", "]", "{", "}", "*", "^"]:
+        cleaned = cleaned.replace(ch, " ")
+    cleaned = " ".join(cleaned.split())
+    return cleaned or query
+
 def _fmt_duration(secs: float) -> str:
     """Format seconds as HH:MM:SS."""
     h = int(secs // 3600)
@@ -206,30 +216,83 @@ class Repository:
         self, query: str, limit: int = 10, video_id: str | None = None
     ) -> list[SearchResult]:
         """Full-text search using FTS5."""
-        if video_id:
-            rows = self.conn.execute(
-                """SELECT a.*, v.filename,
-                          rank as score
-                   FROM artifacts a
-                   JOIN videos v ON v.id = a.video_id
-                   WHERE a.video_id = ?
-                     AND a.rowid IN (SELECT rowid FROM artifacts_fts WHERE artifacts_fts MATCH ?)
-                   ORDER BY a.start_sec
-                   LIMIT ?""",
-                (video_id, query, limit),
-            ).fetchall()
-        else:
-            rows = self.conn.execute(
-                """SELECT a.*, v.filename,
-                          rank as score
-                   FROM artifacts_fts
-                   JOIN artifacts a ON a.rowid = artifacts_fts.rowid
-                   JOIN videos v ON v.id = a.video_id
-                   WHERE artifacts_fts MATCH ?
-                   ORDER BY rank
-                   LIMIT ?""",
-                (query, limit),
-            ).fetchall()
+        q = query
+        try:
+            if video_id:
+                rows = self.conn.execute(
+                    """SELECT a.*, v.filename,
+                              bm25(artifacts_fts) as score
+                       FROM artifacts_fts
+                       JOIN artifacts a ON a.rowid = artifacts_fts.rowid
+                       JOIN videos v ON v.id = a.video_id
+                       WHERE a.video_id = ?
+                         AND artifacts_fts MATCH ?
+                       ORDER BY score
+                       LIMIT ?""",
+                    (video_id, q, limit),
+                ).fetchall()
+            else:
+                rows = self.conn.execute(
+                    """SELECT a.*, v.filename,
+                              bm25(artifacts_fts) as score
+                       FROM artifacts_fts
+                       JOIN artifacts a ON a.rowid = artifacts_fts.rowid
+                       JOIN videos v ON v.id = a.video_id
+                       WHERE artifacts_fts MATCH ?
+                       ORDER BY score
+                       LIMIT ?""",
+                    (q, limit),
+                ).fetchall()
+        except sqlite3.OperationalError:
+            q = _sanitize_fts_query(query)
+            try:
+                if video_id:
+                    rows = self.conn.execute(
+                        """SELECT a.*, v.filename,
+                                  bm25(artifacts_fts) as score
+                           FROM artifacts_fts
+                           JOIN artifacts a ON a.rowid = artifacts_fts.rowid
+                           JOIN videos v ON v.id = a.video_id
+                           WHERE a.video_id = ?
+                             AND artifacts_fts MATCH ?
+                           ORDER BY score
+                           LIMIT ?""",
+                        (video_id, q, limit),
+                    ).fetchall()
+                else:
+                    rows = self.conn.execute(
+                        """SELECT a.*, v.filename,
+                                  bm25(artifacts_fts) as score
+                           FROM artifacts_fts
+                           JOIN artifacts a ON a.rowid = artifacts_fts.rowid
+                           JOIN videos v ON v.id = a.video_id
+                           WHERE artifacts_fts MATCH ?
+                           ORDER BY score
+                           LIMIT ?""",
+                        (q, limit),
+                    ).fetchall()
+            except sqlite3.OperationalError:
+                like_q = f"%{q}%"
+                if video_id:
+                    rows = self.conn.execute(
+                        """SELECT a.*, v.filename, 0.0 as score
+                           FROM artifacts a
+                           JOIN videos v ON v.id = a.video_id
+                           WHERE a.video_id = ? AND a.text LIKE ?
+                           ORDER BY a.start_sec
+                           LIMIT ?""",
+                        (video_id, like_q, limit),
+                    ).fetchall()
+                else:
+                    rows = self.conn.execute(
+                        """SELECT a.*, v.filename, 0.0 as score
+                           FROM artifacts a
+                           JOIN videos v ON v.id = a.video_id
+                           WHERE a.text LIKE ?
+                           ORDER BY a.video_id, a.start_sec
+                           LIMIT ?""",
+                        (like_q, limit),
+                    ).fetchall()
 
         results = []
         for i, r in enumerate(rows):
@@ -262,6 +325,44 @@ class Repository:
             vec = list(struct.unpack(f"{r['dim']}f", r["vector"]))
             result[r["artifact_id"]] = vec
         return result
+
+
+    def get_temporal_window(
+        self,
+        video_id: str,
+        center_sec: float,
+        *,
+        before: int = 1,
+        after: int = 1,
+    ) -> list[ArtifactRecord]:
+        """Return neighboring artifacts around a timestamp for temporal context."""
+        # previous artifacts
+        prev_rows = self.conn.execute(
+            """SELECT * FROM artifacts
+               WHERE video_id = ? AND start_sec <= ?
+               ORDER BY start_sec DESC
+               LIMIT ?""",
+            (video_id, center_sec, max(before + 1, 1)),
+        ).fetchall()
+        next_rows = self.conn.execute(
+            """SELECT * FROM artifacts
+               WHERE video_id = ? AND start_sec > ?
+               ORDER BY start_sec ASC
+               LIMIT ?""",
+            (video_id, center_sec, max(after, 0)),
+        ).fetchall()
+
+        rows = list(reversed(prev_rows)) + list(next_rows)
+        # de-dupe while preserving order
+        seen: set[str] = set()
+        out: list[ArtifactRecord] = []
+        for r in rows:
+            rid = r["id"]
+            if rid in seen:
+                continue
+            seen.add(rid)
+            out.append(ArtifactRecord(**dict(r)))
+        return out
 
     def get_all_artifacts_with_text(
         self, video_id: str | None = None, limit: int = 100
