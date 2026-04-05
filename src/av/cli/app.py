@@ -34,6 +34,7 @@ from av.cli.transcript import register as register_transcript  # noqa: E402
 from av.cli.export import register as register_export  # noqa: E402
 from av.cli.open_cmd import register as register_open  # noqa: E402
 from av.cli.config_cmd import config_app  # noqa: E402
+from av.cli.sentinel import register as register_sentinel  # noqa: E402
 
 register_ingest(app)
 register_search(app)
@@ -43,6 +44,7 @@ register_info(app)
 register_transcript(app)
 register_export(app)
 register_open(app)
+register_sentinel(app)
 app.add_typer(config_app, name="config", help="Show/set configuration")
 
 
