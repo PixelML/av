@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import time
 
-from av.core.config import AVConfig
+from av.core.config import AVConfig, get_openai_config
 from av.db.models import SearchResult
 from av.db.repository import Repository
 from av.providers.openai import OpenAIEmbedder
@@ -50,7 +50,7 @@ def search(
     if embeddings:
         # Embed the query
         try:
-            embedder = OpenAIEmbedder(config)
+            embedder = OpenAIEmbedder(get_openai_config(config) or config)
             query_vecs = embedder.embed([query])
             if query_vecs:
                 query_vec = query_vecs[0]

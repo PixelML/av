@@ -51,7 +51,8 @@ def _patch_ffmpeg():
 def test_anthropic_skips_transcription_and_embed(
     fake_video: Path, repo: Repository, capsys: pytest.CaptureFixture
 ) -> None:
-    """Anthropic provider has no transcribe_model and no embed_model — both should be skipped."""
+    """Anthropic provider has no transcribe_model and no embed_model — both should be skipped
+    when no OpenAI fallback key is available."""
     config = AVConfig(
         provider="anthropic",
         api_base_url="https://api.anthropic.com/v1/",
@@ -62,7 +63,8 @@ def test_anthropic_skips_transcription_and_embed(
         chat_model="claude-sonnet-4-5-20250929",
     )
 
-    with _patch_ffmpeg():
+    with _patch_ffmpeg(), \
+         patch("av.pipeline.ingest.get_openai_config", return_value=None):
         result = ingest_video(fake_video, repo, config, no_embed=False)
 
     assert result["status"] == "complete_with_warnings"
@@ -89,7 +91,8 @@ def test_gemini_skips_transcription_but_embeds(
         chat_model="gemini-2.5-flash",
     )
 
-    with _patch_ffmpeg():
+    with _patch_ffmpeg(), \
+         patch("av.pipeline.ingest.get_openai_config", return_value=None):
         result = ingest_video(fake_video, repo, config, no_embed=False)
 
     assert result["status"] == "complete_with_warnings"

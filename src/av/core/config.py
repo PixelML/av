@@ -52,6 +52,7 @@ class AVConfig(BaseSettings):
     # API
     api_base_url: str = Field(default="https://api.openai.com/v1")
     api_key: str = Field(default="")
+    openai_api_key: str = Field(default="")
 
     # Models
     transcribe_model: str = Field(default=DEFAULT_TRANSCRIBE_MODEL)
@@ -78,6 +79,7 @@ def get_config(db_path: Path | None = None) -> AVConfig:
         "provider",
         "api_base_url",
         "api_key",
+        "openai_api_key",
         "transcribe_model",
         "vision_model",
         "embed_model",
@@ -89,6 +91,43 @@ def get_config(db_path: Path | None = None) -> AVConfig:
 
     config = AVConfig(**init_kwargs)
 
+    # If openai_api_key not set explicitly, try OPENAI_API_KEY env var as fallback
+    if not config.openai_api_key:
+        config.openai_api_key = os.environ.get("OPENAI_API_KEY", "")
+
     if db_path is not None:
         config.db_path = db_path
     return config
+
+
+def get_openai_config(config: AVConfig) -> AVConfig | None:
+    """Return an OpenAI-direct config for embeddings/transcription, or None if unavailable.
+
+    When a non-OpenAI provider is active (e.g. PixelML, Anthropic) but an OpenAI key
+    is available (explicit, env var, or Codex OAuth), this returns a config pointing at
+    api.openai.com with standard model names.
+    """
+    # Already using OpenAI directly — no need for a separate config
+    if config.provider in ("openai", "openai-oauth", ""):
+        return None
+
+    # Try explicit openai_api_key first
+    key = (config.openai_api_key or "").strip()
+
+    # Fallback: Codex OAuth tokens (same mechanism as _resolve_api_key in openai.py)
+    if not key:
+        from av.providers.openai import _codex_oauth_token, _openclaw_oauth_token
+        key = _openclaw_oauth_token() or _codex_oauth_token() or ""
+
+    if not key:
+        return None
+
+    return AVConfig(
+        provider="openai",
+        api_base_url="https://api.openai.com/v1",
+        api_key=key,
+        transcribe_model="whisper-1",
+        embed_model="text-embedding-3-small",
+        vision_model=config.vision_model,
+        chat_model=config.chat_model,
+    )

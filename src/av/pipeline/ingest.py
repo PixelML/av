@@ -11,7 +11,7 @@ import time
 import uuid
 from pathlib import Path
 
-from av.core.config import AVConfig
+from av.core.config import AVConfig, get_openai_config
 from av.core.constants import LONG_VIDEO_WARN_MINUTES, MAX_AUDIO_CHUNK_BYTES
 from av.core.exceptions import IngestError
 from av.db.models import ArtifactRecord, VideoRecord
@@ -196,15 +196,19 @@ def ingest_video(
         dense_rows: list[dict] = []
         dense_artifacts: list[ArtifactRecord] = []
 
+        # Resolve OpenAI-direct config for transcription/embeddings (when using non-OpenAI provider)
+        oai_config = get_openai_config(config)
+
         # Step 4: Extract audio and transcribe (best-effort)
-        can_transcribe = bool(config.transcribe_model)
+        transcribe_cfg = oai_config or config
+        can_transcribe = bool(transcribe_cfg.transcribe_model)
         if can_transcribe:
             try:
                 print(f"  Extracting audio...", file=sys.stderr)
                 audio_path = extract_audio(path)
 
                 print(f"  Transcribing...", file=sys.stderr)
-                transcriber = OpenAITranscriber(config)
+                transcriber = OpenAITranscriber(transcribe_cfg)
 
                 audio_size = audio_path.stat().st_size
                 if audio_size > MAX_AUDIO_CHUNK_BYTES:
@@ -361,9 +365,10 @@ def ingest_video(
                 print(f"  Warning: {msg}", file=sys.stderr)
 
         # Step 6: Embeddings (best-effort)
-        can_embed = bool(config.embed_model)
+        embed_cfg = oai_config or config
+        can_embed = bool(embed_cfg.embed_model)
         if not no_embed and not can_embed:
-            msg = f"Embeddings disabled (provider={config.provider or 'current'})."
+            msg = f"Embeddings disabled (provider={config.provider or 'current'}). Set AV_OPENAI_API_KEY for OpenAI embeddings."
             warnings.append(msg)
             print(f"  {msg}", file=sys.stderr)
 
@@ -372,7 +377,7 @@ def ingest_video(
                 all_artifacts = transcript_artifacts + caption_artifacts + dense_artifacts
                 if all_artifacts:
                     print(f"  Generating embeddings for {len(all_artifacts)} artifacts...", file=sys.stderr)
-                    embedder = OpenAIEmbedder(config)
+                    embedder = OpenAIEmbedder(embed_cfg)
                     texts = [a.text for a in all_artifacts]
                     ids = [a.id for a in all_artifacts]
 
@@ -382,7 +387,7 @@ def ingest_video(
                         batch_ids = ids[i : i + batch_size]
                         vectors = embedder.embed(batch_texts)
 
-                        items = [(aid, config.embed_model, len(vec), vec) for aid, vec in zip(batch_ids, vectors)]
+                        items = [(aid, embed_cfg.embed_model, len(vec), vec) for aid, vec in zip(batch_ids, vectors)]
                         repo.insert_embeddings_batch(items)
 
                     print(f"  Embedded {len(texts)} artifacts.", file=sys.stderr)

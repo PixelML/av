@@ -58,7 +58,7 @@ def test_defaults_without_config_file(tmp_path: Path, monkeypatch: pytest.Monkey
     assert config.provider == ""
     assert config.api_base_url == "https://api.openai.com/v1"
     assert config.transcribe_model == "whisper-1"
-    assert config.chat_model == "gpt-4-1"
+    assert config.chat_model == "gpt-4.1"
 
 
 def test_config_file_overrides_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -88,6 +88,10 @@ def test_env_var_overrides_config_file(tmp_path: Path, monkeypatch: pytest.Monke
         "chat_model": "claude-sonnet-4-5-20250929",
     }))
     monkeypatch.setattr("av.core.config.CONFIG_FILE_PATH", cfg_file)
+    # Clear any stale AV_ env vars, then set the one we want to test
+    for key in list(os.environ):
+        if key.startswith("AV_"):
+            monkeypatch.delenv(key, raising=False)
     monkeypatch.setenv("AV_CHAT_MODEL", "my-custom-model")
 
     config = get_config()

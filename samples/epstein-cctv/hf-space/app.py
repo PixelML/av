@@ -1,6 +1,6 @@
 """
 Epstein Files CCTV — Video Memory Search
-Search 200+ AI-generated temporal event captions from DOJ Epstein Files Dataset 8
+Search 470+ AI-generated temporal event captions from DOJ Epstein Files Dataset 8
 (MCC prison CCTV surveillance footage) using natural language.
 Click any result to play the exact moment.
 
@@ -291,7 +291,7 @@ with gr.Blocks(
 ) as demo:
     gr.Markdown(
         "# Epstein Files CCTV \u2014 Video Memory Search\n\n"
-        "Search **209 AI-generated temporal event captions** + **7 structured reports** from DOJ Epstein Files "
+        "Search **472 AI-generated temporal event captions** + **21 structured summaries & reports** from DOJ Epstein Files "
         "Dataset 8 \u2014 MCC prison CCTV surveillance footage (July\u2013August 2019). "
         "**Click any result to play the exact moment.**\n\n"
         "Captions describe *what happens across frames* (temporal changes), not static scenes. "
@@ -320,7 +320,7 @@ with gr.Blocks(
         "**Data source**: [DOJ Epstein Files \u2014 Data Set 8]"
         "(https://www.justice.gov/epstein/doj-disclosures/data-set-8-files) "
         "(419 CCTV surveillance videos from MCC New York). "
-        "This demo indexes 10 clips (~4 hrs). "
+        "This demo indexes 25 clips (~24 hrs of footage). "
         "Full dataset: [PixelML/epstein-files-cctv-video-memory]"
         "(https://huggingface.co/datasets/PixelML/epstein-files-cctv-video-memory)\n\n"
         "**How it works**: `pip install pixelml-av` \u2192 "

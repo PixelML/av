@@ -18,6 +18,7 @@ _console = Console(stderr=True)
 _PROVIDER_MENU = [
     ("openai-oauth", "OpenAI (Codex OAuth)", "free via Codex CLI auth"),
     ("openai", "OpenAI (API key)", "paste your sk-... key"),
+    ("pixelml", "PixelML (OpenRouter)", "routes to GPT-4.1, Claude, Gemini via PixelML gateway"),
     ("anthropic", "Anthropic (Claude)", "paste your Anthropic key"),
     ("gemini", "Google (Gemini)", "paste your Google API key"),
 ]
@@ -54,6 +55,7 @@ def config_show() -> None:
         "provider": config.provider or "(not set)",
         "api_base_url": config.api_base_url,
         "api_key": "***" if config.api_key else "(not set)",
+        "openai_api_key": "***" if config.openai_api_key else "(not set)",
         "transcribe_model": config.transcribe_model or "(disabled)",
         "vision_model": config.vision_model,
         "embed_model": config.embed_model or "(disabled)",
@@ -83,7 +85,7 @@ def config_setup() -> None:
     choice = IntPrompt.ask(
         "  Enter choice",
         console=_console,
-        choices=["1", "2", "3", "4"],
+        choices=[str(i) for i in range(1, len(_PROVIDER_MENU) + 1)],
         default=1,
     )
     provider_key = _PROVIDER_MENU[choice - 1][0]
@@ -114,6 +116,15 @@ def config_setup() -> None:
     elif provider_key == "openai":
         api_key = Prompt.ask("  Enter your OpenAI API key", console=_console)
         config_data["api_key"] = api_key.strip()
+
+    elif provider_key == "pixelml":
+        api_key = Prompt.ask("  Enter your PixelML API key", console=_console)
+        config_data["api_key"] = api_key.strip()
+        _console.print()
+        _console.print(
+            "  [yellow]Note:[/yellow] Transcription (Whisper) is not routed through PixelML. "
+            "Videos will be ingested without transcripts unless you set [bold]AV_OPENAI_API_KEY[/bold]."
+        )
 
     elif provider_key == "anthropic":
         api_key = Prompt.ask("  Enter your Anthropic API key", console=_console)

@@ -76,12 +76,20 @@ def _openclaw_oauth_token() -> str | None:
 
 
 def _resolve_api_key(config: AVConfig) -> str:
-    """Resolve API key, preferring explicit AV_API_KEY then Codex OAuth token."""
+    """Resolve API key, preferring explicit AV_API_KEY then provider-specific env vars then Codex OAuth."""
+    import os
+
     configured = (config.api_key or "").strip()
 
     # Preserve existing behavior for real keys, but allow placeholder to fallback.
     if configured and configured.lower() != "no-key":
         return configured
+
+    # Check provider-specific env vars
+    if config.provider == "pixelml":
+        pixelml_key = os.environ.get("PIXELML_API_KEY", "").strip()
+        if pixelml_key:
+            return pixelml_key
 
     # Prefer OpenClaw auth-profile OAuth (often fresher), then Codex CLI cache.
     oauth = _openclaw_oauth_token() or _codex_oauth_token()

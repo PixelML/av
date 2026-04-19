@@ -22,7 +22,7 @@ size_categories:
 
 Pre-built video memory index of DOJ Epstein Files Dataset 8 (MCC prison CCTV surveillance footage), created with [`av`](https://github.com/PixelML/av).
 
-**10 videos | ~4 hours of footage | 209 temporal event captions + 7 structured summaries + 7 analysis reports | searchable + queryable**
+**25 videos | ~24 hours of footage | 472 temporal event captions + 21 structured summaries + 21 analysis reports | searchable + queryable**
 
 ## Quickstart
 
@@ -54,49 +54,63 @@ av list --db av.db
 
 ### This subset
 
-10 representative clips from Dataset 8 covering multiple camera positions:
+25 clips from Dataset 8 covering multiple camera positions and date ranges:
 
 | File | Duration | Resolution | Audio | Description |
 |------|----------|------------|-------|-------------|
-| EFTA00028842.mp4 | 12s | 854x480 | Yes | Higher-resolution clip |
+| EFTA00010707.mp4 | 2min | 704x592 | No | Higher-resolution clip (different camera) |
+| EFTA00032989.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033040.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033075.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033131.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033143.mp4 | 59min | 352x240 | No | Long CCTV recording |
+| EFTA00033156.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00028842.mp4 | 12s | 854x480 | No | Short surveillance clip |
 | EFTA00029996.mp4 | 8s | 352x240 | No | Short surveillance clip |
 | EFTA00029997.mp4 | 18s | 352x240 | No | Short surveillance clip |
-| EFTA00033226.mp4 | 60min | 352x240 | Yes | Long CCTV recording |
-| EFTA00033244.mp4 | 60min | 352x240 | Yes | Long CCTV recording |
-| EFTA00033246.mp4 | 60min | 352x240 | Yes | Long CCTV recording |
-| EFTA00033262.mp4 | 60min | 352x240 | Yes | Long CCTV recording |
-| EFTA00033280.mp4 | 59min | 352x240 | Yes | Long CCTV recording |
-| EFTA00033368.mp4 | 60min | 352x240 | Yes | Long CCTV recording |
-| EFTA00033396.mp4 | 60min | 352x240 | Yes | Long CCTV recording |
+| EFTA00033226.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033244.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033246.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033262.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033280.mp4 | 59min | 352x240 | No | Long CCTV recording |
+| EFTA00033368.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033396.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033399.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033407.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033411.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033412.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033245.mp4 | 59min | 352x240 | No | Long CCTV recording |
+| EFTA00033263.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033312.mp4 | 60min | 352x240 | No | Long CCTV recording |
+| EFTA00033393.mp4 | 60min | 352x240 | No | Long CCTV recording |
 
 ### Files
 
 | File | Format | Description |
 |------|--------|-------------|
 | `av.db` | SQLite | Drop-in database for `av` CLI — instant search and Q&A |
-| `captions.jsonl` | JSONL | 209 temporal event captions with start/end timestamps |
-| `reports.jsonl` | JSONL | 7 structured summaries + 7 full analysis reports per video |
+| `captions.jsonl` | JSONL | 472 temporal event captions with start/end timestamps |
+| `reports.jsonl` | JSONL | 21 structured summaries + 21 analysis reports |
 | `transcripts.jsonl` | JSONL | Audio transcripts (Whisper) where available |
-| `all_artifacts.jsonl` | JSONL | Complete export of all 224 artifacts |
+| `all_artifacts.jsonl` | JSONL | Complete export of all 514 artifacts |
 
 ### Processing — Three-Layer Cascade
 
 Unlike per-frame captioning (which produces repetitive static scene descriptions), this dataset uses `av`'s **three-layer captioning cascade** with the `security` topic:
 
-1. **Layer 0 — Chunk VLM**: Video split into 30-second chunks, 3 frames extracted per chunk, sent to GPT-4.1 vision as a multi-image call. Prompt focuses on temporal changes, people entering/leaving, door activity, suspicious behavior. Static chunks are filtered out.
+1. **Layer 0 — Chunk VLM**: Video split into 30-second chunks, 3 frames extracted per chunk, sent to GPT-4.1 vision (via PixelML OpenRouter) as a multi-image call. Prompt focuses on temporal changes, people entering/leaving, door activity, suspicious behavior. Static chunks are filtered out.
 2. **Layer 1 — Structured Summary**: All Layer 0 captions aggregated and summarized by GPT-4.1 into a structured event log with `START:END:EVENT` format.
 3. **Layer 2 — Analysis Report**: Layer 1 output consolidated into a final report with timestamped events, summary, and categorized tags.
 
-**Result**: 209 meaningful event descriptions (vs 1,418 repetitive frame-by-frame captions previously), each with `start_sec` and `end_sec` for temporal ranges.
+**Result**: 472 meaningful event descriptions across 25 videos, each with `start_sec` and `end_sec` for temporal ranges.
 
 ### Artifact types
 
 | Type | Count | Description |
 |------|-------|-------------|
-| `caption` | 209 | Temporal event descriptions (30-second chunks) |
-| `summary` | 7 | Structured event logs per video |
-| `report` | 7 | Full analysis reports with categories |
-| `transcript` | 1 | Audio transcript |
+| `caption` | 472 | Temporal event descriptions (30-second chunks) |
+| `summary` | 21 | Structured event logs per video |
+| `report` | 21 | Full analysis reports with categories |
 
 ## How it was built
 

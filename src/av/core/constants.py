@@ -59,6 +59,13 @@ PROVIDER_PRESETS: dict[str, dict[str, str]] = {
         "embed_model": "text-embedding-004",
         "chat_model": "gemini-2.5-flash",
     },
+    "pixelml": {
+        "api_base_url": "https://ishi.pixelml.com/v1",
+        "transcribe_model": "",
+        "vision_model": "pixelml/gpt-4.1",
+        "embed_model": "",
+        "chat_model": "pixelml/gpt-4.1",
+    },
 }
 
 # Cascade defaults
