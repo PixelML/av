@@ -15,6 +15,7 @@ model or deployment.
 | `gate-color-2-4-6-8.json` | `av bench gate --kind color --sizes 2,4,6,8` | Exact-order accuracy at 2, 4, 6 and 8 frames |
 | `probe-tokens-per-frame.json` | `av bench probe` | Whether per-frame token cost is tunable on this endpoint |
 | `noise-floor-saturated.json` | `av bench noise --n 6 --repeats 5` | A saturated cell, and the harness refusing to call its zero spread a noise floor |
+| `sweep-two-probes-five-intervals.json` | `av bench sweep .../captions.jsonl .../videos --probes door_activity,person_enters --intervals 1,2,5,10,30 --max-per-probe 8 --cost token:0.30:2.50` | The full frontier: two probes collapsing at different rates |
 | `sweep-door-activity.json` | `av bench sweep .../captions.jsonl .../videos --probes door_activity --intervals 1,5,30 --max-per-probe 4 --cost token:0.30:2.50` | Where detection collapses as frames thin out |
 | `plan-image-tokens.json` | `av bench plan --budgets 200,400,800` | Predicted per-frame token cost against resolution (offline) |
 | `cost-model-arithmetic.json` | `av bench cost --tokens-per-frame 1024 --context-tokens 1048576 --prefill-tok-s 20000 --hourly-usd 25 --kv-bytes-per-token 890` | The frontier arithmetic, with inputs recorded (offline) |
