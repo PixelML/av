@@ -91,6 +91,11 @@ def _resolve_api_key(config: AVConfig) -> str:
         if pixelml_key:
             return pixelml_key
 
+    if config.provider == "deepseek":
+        from av.providers.deepseek import resolve_api_key as deepseek_key
+
+        return deepseek_key(config)
+
     # Prefer OpenClaw auth-profile OAuth (often fresher), then Codex CLI cache.
     oauth = _openclaw_oauth_token() or _codex_oauth_token()
     if oauth:

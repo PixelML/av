@@ -9,3 +9,6 @@ build/
 .DS_Store
 .pytest_cache/
 PUBLISHING.md
+
+# Benchmark receipts from local runs (the committed examples under samples/ are kept)
+/bench-receipts/

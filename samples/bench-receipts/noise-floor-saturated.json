@@ -1,0 +1,269 @@
+{
+  "receipt_version": 2,
+  "run_id": "4928d71e-dc7f-430b-b386-9d06f1780ade",
+  "created_utc": "2026-09-10T14:05:10+00:00",
+  "kind": "noise",
+  "av_version": "0.1.0",
+  "environment": {
+    "python": "3.11.11",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "ffmpeg": "ffmpeg version 7.1 Copyright (c) 2000-2024 the FFmpeg developers"
+  },
+  "provider": {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "endpoint_host": "generativelanguage.googleapis.com",
+    "temperature": 0.0,
+    "seed": 0
+  },
+  "determinism": {
+    "temperature": 0.0,
+    "seed": 0,
+    "repeats": 5,
+    "fixture_kind": "color",
+    "fixture_n": 6,
+    "ffmpeg_commands": [
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF0000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_noise_q7y6hpcg/color_06_00.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00A000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_noise_q7y6hpcg/color_06_01.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x0000FF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_noise_q7y6hpcg/color_06_02.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFFFF00:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_noise_q7y6hpcg/color_06_03.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF00FF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_noise_q7y6hpcg/color_06_04.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00FFFF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_noise_q7y6hpcg/color_06_05.jpg"
+    ],
+    "fixture_sha256": [
+      "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+      "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+      "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+      "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f",
+      "0033bce2024225a82c84aad67ab0f7c75b7af20d2d1eead163e4098ab11bc33d",
+      "a6cfb65c424e9027c7c54b563825cb01032df85bcc7f11550b69094df0d85b6b"
+    ]
+  },
+  "cost_model": null,
+  "summary": {
+    "score_spread": {
+      "n": 5,
+      "unit": " score",
+      "values": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "min": 1.0,
+      "max": 1.0,
+      "mean": 1.0,
+      "stdev": 0.0,
+      "range": 0.0
+    },
+    "prompt_token_spread": 0,
+    "interpretation": "every run hit the ceiling, so this spread measures nothing. Re-measure the noise floor on a cell the model does not solve perfectly.",
+    "saturated": true
+  },
+  "cells": [
+    {
+      "n": 6,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "reported": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "exact_order": true,
+      "correct_prefix": 6,
+      "n_reported": 6,
+      "tokens_in": 1640,
+      "tokens_out": 11,
+      "ttft_sec": 2.9744,
+      "wall_sec": 2.9747,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red, green, blue, yellow, magenta, cyan",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+        "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+        "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f",
+        "0033bce2024225a82c84aad67ab0f7c75b7af20d2d1eead163e4098ab11bc33d",
+        "a6cfb65c424e9027c7c54b563825cb01032df85bcc7f11550b69094df0d85b6b"
+      ]
+    },
+    {
+      "n": 6,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "reported": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "exact_order": true,
+      "correct_prefix": 6,
+      "n_reported": 6,
+      "tokens_in": 1640,
+      "tokens_out": 11,
+      "ttft_sec": 2.8376,
+      "wall_sec": 2.8422,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red, green, blue, yellow, magenta, cyan",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+        "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+        "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f",
+        "0033bce2024225a82c84aad67ab0f7c75b7af20d2d1eead163e4098ab11bc33d",
+        "a6cfb65c424e9027c7c54b563825cb01032df85bcc7f11550b69094df0d85b6b"
+      ]
+    },
+    {
+      "n": 6,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "reported": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "exact_order": true,
+      "correct_prefix": 6,
+      "n_reported": 6,
+      "tokens_in": 1640,
+      "tokens_out": 11,
+      "ttft_sec": 3.1038,
+      "wall_sec": 3.1043,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red, green, blue, yellow, magenta, cyan",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+        "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+        "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f",
+        "0033bce2024225a82c84aad67ab0f7c75b7af20d2d1eead163e4098ab11bc33d",
+        "a6cfb65c424e9027c7c54b563825cb01032df85bcc7f11550b69094df0d85b6b"
+      ]
+    },
+    {
+      "n": 6,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "reported": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "exact_order": true,
+      "correct_prefix": 6,
+      "n_reported": 6,
+      "tokens_in": 1640,
+      "tokens_out": 11,
+      "ttft_sec": 2.5817,
+      "wall_sec": 2.5832,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red, green, blue, yellow, magenta, cyan",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+        "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+        "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f",
+        "0033bce2024225a82c84aad67ab0f7c75b7af20d2d1eead163e4098ab11bc33d",
+        "a6cfb65c424e9027c7c54b563825cb01032df85bcc7f11550b69094df0d85b6b"
+      ]
+    },
+    {
+      "n": 6,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "reported": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "exact_order": true,
+      "correct_prefix": 6,
+      "n_reported": 6,
+      "tokens_in": 1640,
+      "tokens_out": 11,
+      "ttft_sec": 2.6432,
+      "wall_sec": 2.6442,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red,green,blue,yellow,magenta,cyan",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+        "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+        "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f",
+        "0033bce2024225a82c84aad67ab0f7c75b7af20d2d1eead163e4098ab11bc33d",
+        "a6cfb65c424e9027c7c54b563825cb01032df85bcc7f11550b69094df0d85b6b"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "label": "untested",
+      "statement": "Every run scored full marks, so this cell has no headroom to vary and its zero spread is not a usable noise floor. Re-run --n at a size the model does not solve perfectly.",
+      "source": null
+    }
+  ],
+  "notes": []
+}

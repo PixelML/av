@@ -1,0 +1,219 @@
+{
+  "receipt_version": 2,
+  "run_id": "27fc6f81-943f-4a4b-88f7-21b39c2676ee",
+  "created_utc": "2026-09-10T14:02:59+00:00",
+  "kind": "gate",
+  "av_version": "0.1.0",
+  "environment": {
+    "python": "3.11.11",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "ffmpeg": "ffmpeg version 7.1 Copyright (c) 2000-2024 the FFmpeg developers"
+  },
+  "provider": {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "endpoint_host": "generativelanguage.googleapis.com",
+    "temperature": 0.0,
+    "seed": 0
+  },
+  "determinism": {
+    "temperature": 0.0,
+    "seed": 0,
+    "fixture_version": 1,
+    "ffmpeg_commands": [
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF0000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_02_00.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00A000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_02_01.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF0000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_04_00.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00A000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_04_01.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x0000FF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_04_02.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFFFF00:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_04_03.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF0000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_06_00.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00A000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_06_01.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x0000FF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_06_02.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFFFF00:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_06_03.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF00FF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_06_04.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00FFFF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_06_05.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF0000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_08_00.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00A000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_08_01.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x0000FF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_08_02.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFFFF00:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_08_03.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF00FF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_08_04.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00FFFF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_08_05.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFFFFFF:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_08_06.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF8000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_gate_ag5c6e27/color_08_07.jpg"
+    ]
+  },
+  "cost_model": null,
+  "summary": {
+    "fixture_kind": "color",
+    "sizes": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "passed_sizes": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "failed_sizes": [],
+    "largest_passing_n": 8,
+    "verdict": "pass"
+  },
+  "cells": [
+    {
+      "n": 2,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green"
+      ],
+      "reported": [
+        "red",
+        "green"
+      ],
+      "exact_order": true,
+      "correct_prefix": 2,
+      "n_reported": 2,
+      "tokens_in": 608,
+      "tokens_out": 3,
+      "ttft_sec": 2.935,
+      "wall_sec": 2.9354,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red, green",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7"
+      ]
+    },
+    {
+      "n": 4,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green",
+        "blue",
+        "yellow"
+      ],
+      "reported": [
+        "red",
+        "green",
+        "blue",
+        "yellow"
+      ],
+      "exact_order": true,
+      "correct_prefix": 4,
+      "n_reported": 4,
+      "tokens_in": 1124,
+      "tokens_out": 7,
+      "ttft_sec": 3.0127,
+      "wall_sec": 3.0169,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red,green,blue,yellow",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+        "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+        "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f"
+      ]
+    },
+    {
+      "n": 6,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "reported": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan"
+      ],
+      "exact_order": true,
+      "correct_prefix": 6,
+      "n_reported": 6,
+      "tokens_in": 1640,
+      "tokens_out": 11,
+      "ttft_sec": 2.766,
+      "wall_sec": 2.7666,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red,green,blue,yellow,magenta,cyan",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+        "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+        "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f",
+        "0033bce2024225a82c84aad67ab0f7c75b7af20d2d1eead163e4098ab11bc33d",
+        "a6cfb65c424e9027c7c54b563825cb01032df85bcc7f11550b69094df0d85b6b"
+      ]
+    },
+    {
+      "n": 8,
+      "fixture_kind": "color",
+      "expected": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan",
+        "white",
+        "orange"
+      ],
+      "reported": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "magenta",
+        "cyan",
+        "white",
+        "orange"
+      ],
+      "exact_order": true,
+      "correct_prefix": 8,
+      "n_reported": 8,
+      "tokens_in": 2156,
+      "tokens_out": 15,
+      "ttft_sec": 2.9276,
+      "wall_sec": 2.9299,
+      "ok": true,
+      "error": null,
+      "multi_image_unsupported": false,
+      "raw_text": "red, green, blue, yellow, magenta, cyan, white, orange",
+      "frame_sha256": [
+        "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+        "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7",
+        "7f440a482f75672a0173093d8433c28c1bc5e72e1df4199f05bf17c2d4f7db55",
+        "5323ca4428d59c27803079bc9f3f0f2aa34c8e3347c46a2b159c008d32b8bd4f",
+        "0033bce2024225a82c84aad67ab0f7c75b7af20d2d1eead163e4098ab11bc33d",
+        "a6cfb65c424e9027c7c54b563825cb01032df85bcc7f11550b69094df0d85b6b",
+        "fd4c8bdd5d6c1f480b5ee1a433a8fe39378264b1e87d076164bc8ff8aed9f4a4",
+        "5cbcf6917389edc7d1b6d3db56c678bc35c60a5caafa527d51da9b8252408ef7"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "label": "measured",
+      "statement": "Exact-order accuracy was 100% at every tested size [2, 4, 6, 8].",
+      "source": null
+    }
+  ],
+  "notes": []
+}

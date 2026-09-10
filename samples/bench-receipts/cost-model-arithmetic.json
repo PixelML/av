@@ -1,0 +1,109 @@
+{
+  "receipt_version": 2,
+  "run_id": "eeffcfad-e5a1-477e-90bf-dd75557dfefb",
+  "created_utc": "2026-09-10T14:02:02+00:00",
+  "kind": "cost",
+  "av_version": "0.1.0",
+  "environment": {
+    "python": "3.11.11",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "ffmpeg": "ffmpeg version 7.1 Copyright (c) 2000-2024 the FFmpeg developers"
+  },
+  "provider": {
+    "note": "no provider contacted \u2014 this subcommand is arithmetic only"
+  },
+  "determinism": {
+    "tokens_per_frame": 1024,
+    "context_tokens": 1048576,
+    "prefill_tok_per_s": 20000.0,
+    "hourly_usd": 25.0,
+    "kv_bytes_per_token": 890.0,
+    "intervals_sec": [
+      1.0,
+      2.0,
+      5.0,
+      10.0,
+      30.0,
+      60.0
+    ],
+    "input_source": "brief-supplied figures"
+  },
+  "cost_model": {
+    "mode": "per_hour",
+    "hourly_usd": 25.0,
+    "prefill_tok_per_s": 20000.0,
+    "decode_tok_per_s": null
+  },
+  "summary": {
+    "tokens_per_frame": 1024,
+    "frames_per_request_max": 1024,
+    "single_request_minutes_at_1fps": 17.07,
+    "target_video_hours_per_dollar": 100.0,
+    "required_interval_sec": 128.0,
+    "required_interval_description": "one frame every 128 seconds at 1024 tokens/frame"
+  },
+  "cells": [
+    {
+      "interval_sec": 1.0,
+      "frames_per_video_hour": 3600.0,
+      "tokens_per_video_hour": 3686400.0,
+      "gpu_seconds_per_video_hour": 184.32,
+      "cost_usd_per_video_hour": 1.28,
+      "video_hours_per_dollar": 0.781,
+      "kv_gib_per_video_hour": 3.0556
+    },
+    {
+      "interval_sec": 2.0,
+      "frames_per_video_hour": 1800.0,
+      "tokens_per_video_hour": 1843200.0,
+      "gpu_seconds_per_video_hour": 92.16,
+      "cost_usd_per_video_hour": 0.64,
+      "video_hours_per_dollar": 1.563,
+      "kv_gib_per_video_hour": 1.5278
+    },
+    {
+      "interval_sec": 5.0,
+      "frames_per_video_hour": 720.0,
+      "tokens_per_video_hour": 737280.0,
+      "gpu_seconds_per_video_hour": 36.864,
+      "cost_usd_per_video_hour": 0.256,
+      "video_hours_per_dollar": 3.906,
+      "kv_gib_per_video_hour": 0.6111
+    },
+    {
+      "interval_sec": 10.0,
+      "frames_per_video_hour": 360.0,
+      "tokens_per_video_hour": 368640.0,
+      "gpu_seconds_per_video_hour": 18.432,
+      "cost_usd_per_video_hour": 0.128,
+      "video_hours_per_dollar": 7.812,
+      "kv_gib_per_video_hour": 0.3056
+    },
+    {
+      "interval_sec": 30.0,
+      "frames_per_video_hour": 120.0,
+      "tokens_per_video_hour": 122880.0,
+      "gpu_seconds_per_video_hour": 6.144,
+      "cost_usd_per_video_hour": 0.042667,
+      "video_hours_per_dollar": 23.438,
+      "kv_gib_per_video_hour": 0.1019
+    },
+    {
+      "interval_sec": 60.0,
+      "frames_per_video_hour": 60.0,
+      "tokens_per_video_hour": 61440.0,
+      "gpu_seconds_per_video_hour": 3.072,
+      "cost_usd_per_video_hour": 0.021333,
+      "video_hours_per_dollar": 46.875,
+      "kv_gib_per_video_hour": 0.0509
+    }
+  ],
+  "claims": [
+    {
+      "label": "derived",
+      "statement": "Every figure in this receipt is arithmetic over the inputs supplied on the command line. None of it was measured against a running model.",
+      "source": null
+    }
+  ],
+  "notes": []
+}
