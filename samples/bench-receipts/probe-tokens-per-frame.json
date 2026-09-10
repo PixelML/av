@@ -1,0 +1,121 @@
+{
+  "receipt_version": 2,
+  "run_id": "986625a7-4bf6-4582-a1f9-086949910a70",
+  "created_utc": "2026-09-10T14:03:43+00:00",
+  "kind": "probe",
+  "av_version": "0.1.0",
+  "environment": {
+    "python": "3.11.11",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "ffmpeg": "ffmpeg version 7.1 Copyright (c) 2000-2024 the FFmpeg developers"
+  },
+  "provider": {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "endpoint_host": "generativelanguage.googleapis.com",
+    "temperature": 0.0,
+    "seed": 0
+  },
+  "determinism": {
+    "temperature": 0.0,
+    "seed": 0,
+    "fixture_ffmpeg_commands": [
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0xFF0000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_probe_8wxduo1r/color_02_00.jpg",
+      "ffmpeg -hide_banner -loglevel error -nostdin -y -f lavfi -i color=c=0x00A000:s=512x512:d=1 -frames:v 1 -q:v 2 /var/folders/wf/wt27p9s965s_w_3tq16vpyvc0000gq/T/av_bench_probe_8wxduo1r/color_02_01.jpg"
+    ],
+    "fixture_sha256": [
+      "c86fbf9f1ba254965df1d5846ae5b7481bdf65a1824dfac19536ab2b1838cd03",
+      "91a25b1c70ca2b4344162e17c3cc10d7b4f6e1e72297f13dc1e0caa4fb1624f7"
+    ]
+  },
+  "cost_model": null,
+  "summary": {
+    "tokens_per_frame_verdict": "fixed",
+    "effective_knobs": [],
+    "distinct_image_token_counts": [
+      258
+    ],
+    "multi_image_supported": true,
+    "multi_image_error": null
+  },
+  "cells": [
+    {
+      "baseline_text_only_prompt_tokens": 8,
+      "baseline_ok": true,
+      "baseline_error": null,
+      "detail_observations": [
+        {
+          "detail": "(unset)",
+          "ok": true,
+          "error": null,
+          "prompt_tokens": 266,
+          "tokens_attributable_to_image": 258
+        },
+        {
+          "detail": "low",
+          "ok": true,
+          "error": null,
+          "prompt_tokens": 266,
+          "tokens_attributable_to_image": 258
+        },
+        {
+          "detail": "high",
+          "ok": true,
+          "error": null,
+          "prompt_tokens": 266,
+          "tokens_attributable_to_image": 258
+        }
+      ],
+      "resolution_observations": [
+        {
+          "width": 256,
+          "ok": true,
+          "error": null,
+          "prompt_tokens": 266,
+          "tokens_attributable_to_image": 258
+        },
+        {
+          "width": 512,
+          "ok": true,
+          "error": null,
+          "prompt_tokens": 266,
+          "tokens_attributable_to_image": 258
+        },
+        {
+          "width": 768,
+          "ok": true,
+          "error": null,
+          "prompt_tokens": 266,
+          "tokens_attributable_to_image": 258
+        },
+        {
+          "width": 1024,
+          "ok": true,
+          "error": null,
+          "prompt_tokens": 266,
+          "tokens_attributable_to_image": 258
+        },
+        {
+          "width": 1536,
+          "ok": true,
+          "error": null,
+          "prompt_tokens": 266,
+          "tokens_attributable_to_image": 258
+        }
+      ],
+      "distinct_image_token_counts": [
+        258
+      ],
+      "effective_knobs": [],
+      "verdict": "fixed"
+    }
+  ],
+  "claims": [
+    {
+      "label": "measured",
+      "statement": "Per-frame token count did not change across any tested detail setting or input resolution on this deployment. The tokens-per-frame axis is dropped rather than simulated.",
+      "source": null
+    }
+  ],
+  "notes": []
+}

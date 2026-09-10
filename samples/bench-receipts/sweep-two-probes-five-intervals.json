@@ -1,0 +1,266 @@
+{
+  "receipt_version": 2,
+  "run_id": "025703b6-f3ce-4113-a093-427a960be54a",
+  "created_utc": "2026-09-10T14:19:59+00:00",
+  "kind": "sweep",
+  "av_version": "0.1.0",
+  "environment": {
+    "python": "3.11.11",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "ffmpeg": "ffmpeg version 7.1 Copyright (c) 2000-2024 the FFmpeg developers"
+  },
+  "provider": {
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "endpoint_host": "generativelanguage.googleapis.com",
+    "temperature": 0.0,
+    "seed": 0
+  },
+  "determinism": {
+    "temperature": 0.0,
+    "seed": 0,
+    "intervals_sec": [
+      1.0,
+      2.0,
+      5.0,
+      10.0,
+      30.0
+    ],
+    "scale_width": 768,
+    "artifacts_file": "/Users/sean/WIP/Antigravity-Workspace/av/samples/epstein-cctv/hf-dataset/captions.jsonl",
+    "artifacts_sha256": "4bd43793ec44affcdc11ddf926efdc4332b141f832fd233e25b1f7ad7f12586a",
+    "probe_questions": {
+      "door_activity": "Does anyone open, close, or interact with a door or gate in these frames?",
+      "person_enters": "Does any person enter the scene in these frames?"
+    }
+  },
+  "cost_model": {
+    "mode": "per_token",
+    "input_usd_per_mtok": 0.3,
+    "output_usd_per_mtok": 2.5,
+    "cached_input_usd_per_mtok": null
+  },
+  "summary": {
+    "probes": [
+      "door_activity",
+      "person_enters"
+    ],
+    "intervals_sec": [
+      1.0,
+      2.0,
+      5.0,
+      10.0,
+      30.0
+    ],
+    "reference_windows": 16,
+    "frontier": {
+      "door_activity": {
+        "baseline_interval_sec": 1.0,
+        "baseline_score": 0.625,
+        "safe_interval_sec": 1.0,
+        "safe_score": 0.625,
+        "collapse_interval_sec": 2.0,
+        "collapse_score": 0.5,
+        "tolerance": 0.1
+      },
+      "person_enters": {
+        "baseline_interval_sec": 1.0,
+        "baseline_score": 0.875,
+        "safe_interval_sec": 1.0,
+        "safe_score": 0.875,
+        "collapse_interval_sec": 2.0,
+        "collapse_score": 0.625,
+        "tolerance": 0.1
+      }
+    }
+  },
+  "cells": [
+    {
+      "interval_sec": 1.0,
+      "probe": "door_activity",
+      "events_total": 8,
+      "events_detected": 5,
+      "reference_recall": 0.625,
+      "unparseable": 0,
+      "frames_total": 222,
+      "tokens_in": 57556,
+      "tokens_out": 50,
+      "wall_sec": 52.181,
+      "errors": [],
+      "score": 0.625,
+      "cost_usd": 0.017392,
+      "video_hours_per_dollar": 3.5465837827788578,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 2.0,
+      "probe": "door_activity",
+      "events_total": 8,
+      "events_detected": 4,
+      "reference_recall": 0.5,
+      "unparseable": 0,
+      "frames_total": 111,
+      "tokens_in": 28918,
+      "tokens_out": 60,
+      "wall_sec": 54.793,
+      "errors": [],
+      "score": 0.5,
+      "cost_usd": 0.008825,
+      "video_hours_per_dollar": 6.989085574969217,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 5.0,
+      "probe": "door_activity",
+      "events_total": 8,
+      "events_detected": 1,
+      "reference_recall": 0.125,
+      "unparseable": 0,
+      "frames_total": 44,
+      "tokens_in": 11632,
+      "tokens_out": 50,
+      "wall_sec": 28.027,
+      "errors": [],
+      "score": 0.125,
+      "cost_usd": 0.003615,
+      "video_hours_per_dollar": 17.06453710876261,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 10.0,
+      "probe": "door_activity",
+      "events_total": 8,
+      "events_detected": 1,
+      "reference_recall": 0.125,
+      "unparseable": 0,
+      "frames_total": 22,
+      "tokens_in": 5956,
+      "tokens_out": 40,
+      "wall_sec": 29.511,
+      "errors": [],
+      "score": 0.125,
+      "cost_usd": 0.001887,
+      "video_hours_per_dollar": 32.691051427460955,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 30.0,
+      "probe": "door_activity",
+      "events_total": 8,
+      "events_detected": 1,
+      "reference_recall": 0.125,
+      "unparseable": 0,
+      "frames_total": 7,
+      "tokens_in": 2051,
+      "tokens_out": 35,
+      "wall_sec": 29.358,
+      "errors": [
+        "no frames at 0s in EFTA00028842.mp4"
+      ],
+      "score": 0.125,
+      "cost_usd": 0.000703,
+      "video_hours_per_dollar": 87.76533271675204,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 1.0,
+      "probe": "person_enters",
+      "events_total": 8,
+      "events_detected": 7,
+      "reference_recall": 0.875,
+      "unparseable": 0,
+      "frames_total": 240,
+      "tokens_in": 62144,
+      "tokens_out": 68,
+      "wall_sec": 62.344,
+      "errors": [],
+      "score": 0.875,
+      "cost_usd": 0.018813,
+      "video_hours_per_dollar": 3.543611223325467,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 2.0,
+      "probe": "person_enters",
+      "events_total": 8,
+      "events_detected": 5,
+      "reference_recall": 0.625,
+      "unparseable": 0,
+      "frames_total": 120,
+      "tokens_in": 31184,
+      "tokens_out": 64,
+      "wall_sec": 40.365,
+      "errors": [],
+      "score": 0.625,
+      "cost_usd": 0.009515,
+      "video_hours_per_dollar": 7.006333725688022,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 5.0,
+      "probe": "person_enters",
+      "events_total": 8,
+      "events_detected": 4,
+      "reference_recall": 0.5,
+      "unparseable": 0,
+      "frames_total": 48,
+      "tokens_in": 12608,
+      "tokens_out": 60,
+      "wall_sec": 33.782,
+      "errors": [],
+      "score": 0.5,
+      "cost_usd": 0.003932,
+      "video_hours_per_dollar": 16.95317532973926,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 10.0,
+      "probe": "person_enters",
+      "events_total": 8,
+      "events_detected": 4,
+      "reference_recall": 0.5,
+      "unparseable": 0,
+      "frames_total": 24,
+      "tokens_in": 6416,
+      "tokens_out": 55,
+      "wall_sec": 27.762,
+      "errors": [],
+      "score": 0.5,
+      "cost_usd": 0.002062,
+      "video_hours_per_dollar": 32.32636700124456,
+      "cost_basis": "measured"
+    },
+    {
+      "interval_sec": 30.0,
+      "probe": "person_enters",
+      "events_total": 8,
+      "events_detected": 2,
+      "reference_recall": 0.25,
+      "unparseable": 0,
+      "frames_total": 8,
+      "tokens_in": 2288,
+      "tokens_out": 65,
+      "wall_sec": 34.325,
+      "errors": [],
+      "score": 0.25,
+      "cost_usd": 0.000849,
+      "video_hours_per_dollar": 78.53300349471866,
+      "cost_basis": "measured"
+    }
+  ],
+  "claims": [
+    {
+      "label": "measured",
+      "statement": "Detection rates and token counts are from this run.",
+      "source": null
+    },
+    {
+      "label": "untested",
+      "statement": "Precision was not measured: only windows the reference marks as containing the event were shown, so false positives on empty windows are unknown.",
+      "source": null
+    }
+  ],
+  "notes": [
+    "Reference windows come from a dense vision-model run shipped with this repository, not from human annotation. This metric measures agreement with that reference run and must not be quoted as recall against ground truth."
+  ]
+}

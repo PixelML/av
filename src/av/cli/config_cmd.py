@@ -21,6 +21,7 @@ _PROVIDER_MENU = [
     ("pixelml", "PixelML (OpenRouter)", "routes to GPT-4.1, Claude, Gemini via PixelML gateway"),
     ("anthropic", "Anthropic (Claude)", "paste your Anthropic key"),
     ("gemini", "Google (Gemini)", "paste your Google API key"),
+    ("deepseek", "DeepSeek-V4.1-Flash (self-hosted)", "SGLang endpoint you run yourself"),
 ]
 
 
@@ -133,6 +134,30 @@ def config_setup() -> None:
         _console.print(
             "  [yellow]Note:[/yellow] Transcription requires OpenAI. "
             "Use [bold]--no-embed[/bold] or set [bold]AV_OPENAI_API_KEY[/bold] env var for transcription."
+        )
+
+    elif provider_key == "deepseek":
+        _console.print()
+        _console.print(
+            "  This provider talks to an OpenAI-compatible SGLang server that "
+            "[bold]you[/bold] run. No endpoint ships with av."
+        )
+        base_url = Prompt.ask(
+            "  Enter your endpoint base URL",
+            console=_console,
+            default=config_data["api_base_url"],
+        )
+        config_data["api_base_url"] = base_url.strip()
+        api_key = Prompt.ask(
+            "  Enter an API key (press Enter if your server does not require one)",
+            console=_console,
+            default="",
+        )
+        config_data["api_key"] = api_key.strip()
+        _console.print()
+        _console.print(
+            "  [yellow]Note:[/yellow] Transcription and embeddings are not served by this "
+            "deployment. Set [bold]AV_OPENAI_API_KEY[/bold] if you want those stages."
         )
 
     elif provider_key == "gemini":

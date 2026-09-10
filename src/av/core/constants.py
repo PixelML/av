@@ -59,6 +59,16 @@ PROVIDER_PRESETS: dict[str, dict[str, str]] = {
         "embed_model": "text-embedding-004",
         "chat_model": "gemini-2.5-flash",
     },
+    # DeepSeek-V4.1-Flash served by SGLang. The base URL is SGLang's own local
+    # default — a placeholder for a server you run, not a hosted endpoint. Point
+    # AV_API_BASE_URL at your deployment.
+    "deepseek": {
+        "api_base_url": "http://localhost:30000/v1",
+        "transcribe_model": "",
+        "vision_model": "deepseek-v4.1-flash",
+        "embed_model": "",
+        "chat_model": "deepseek-v4.1-flash",
+    },
     "pixelml": {
         "api_base_url": "https://ishi.pixelml.com/v1",
         "transcribe_model": "",

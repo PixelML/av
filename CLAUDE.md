@@ -65,8 +65,21 @@ src/av/
 │   ├── ffmpeg.py     # ffmpeg/ffprobe wrappers
 │   ├── chunker.py    # Text chunking for embeddings
 │   └── dense_caption.py  # Structured event export
+├── bench/            # Cost/accuracy frontier measurement
+│   ├── cost.py       # Per-hour vs per-token cost models (never conflated)
+│   ├── datasets.py   # Adapters for public benchmarks (no data vendored)
+│   ├── fixtures.py   # Deterministic ffmpeg fixtures for the ordering gate
+│   ├── frames.py     # Pinned frame extraction (command recorded in the receipt)
+│   ├── receipts.py   # Labelled evidence + endpoint redaction
+│   ├── runner.py     # Sweep axes, noise floor, collapse point
+│   ├── vlm.py        # Provider-agnostic multi-image calls with usage accounting
+│   └── tasks/
+│       ├── ordering.py  # Temporal-ordering capability gate
+│       ├── videoqa.py   # Dense vs agentic arms
+│       └── events.py    # Event recall vs sampling interval
 ├── providers/
 │   ├── base.py       # Abstract interfaces
+│   ├── deepseek.py   # DeepSeek-V4.1-Flash (SGLang) config + image-token model
 │   └── openai.py     # OpenAI-compatible client (works for all providers)
 ├── search/
 │   ├── semantic.py   # FTS5 + cosine reranking
@@ -117,6 +130,38 @@ On partial failure: `{"status": "complete_with_warnings", ..., "warnings": ["Tra
 ### `av list` / `av info <id>` / `av transcript <id>` / `av export` / `av open <id>`
 See `av <command> --help` for details.
 
+### `av bench`
+Measures the cost/accuracy frontier. Headline axes are **tokens per query** and
+**accuracy**, plus **dollars per query on hardware you own** — the axis a per-token
+API vendor cannot report.
+
+```bash
+av bench probe                       # is tokens-per-frame tunable on this endpoint?
+av bench gate --sizes 2,4,8          # can the model order frames at all?
+av bench plan --budgets 200,400,800  # predicted token cost per resolution (offline)
+av bench prepare minerva ann.json -o task.jsonl
+av bench run task.jsonl --arms dense,agentic --cost hourly:25.0:20000
+av bench sweep captions.jsonl videos/ --intervals 1,2,5,10,30
+av bench noise --repeats 5
+av bench cost --tokens-per-frame 1024 --prefill-tok-s 20000 --hourly-usd 25
+```
+
+Every subcommand writes a JSON receipt to `./bench-receipts/`.
+
+**Rules that are not optional here:**
+- **Run the gate before quoting any score.** A model that cannot order eight frames
+  is not being measured on temporal understanding, and its throughput is irrelevant.
+- **Label every claim.** `measured` / `derived` / `documented` / `community-reported`
+  / `untested`. Non-measured claims must cite a source; `Claim` raises otherwise.
+- **Publish the noise floor**, and never on a saturated cell.
+- **Never conflate `$/hr` and `$/token`.** They are different economics.
+- **Never put someone else's published number and ours in one cell as a ratio.**
+  Different model, different hardware, different methodology — it is a comparison of
+  approaches, not a head-to-head.
+- **No endpoints in source.** Receipts record a hostname; private hosts are redacted.
+- **No benchmark data is vendored.** Adapters read files the user fetched, under the
+  upstream licence.
+
 ## Provider Support
 
 | Provider | Transcription | Vision/Chat | Embeddings | Setup |
@@ -125,6 +170,7 @@ See `av <command> --help` for details.
 | OpenAI (API key) | whisper-1 | gpt-4-1 | text-embedding-3-small | Paste `sk-...` |
 | Anthropic | -- | claude-sonnet-4-5 | -- | Paste API key |
 | Gemini | -- | gemini-2.5-flash | text-embedding-004 | Paste API key |
+| DeepSeek-V4.1-Flash | -- | deepseek-v4.1-flash (self-hosted SGLang) | -- | `AV_API_BASE_URL` + `DEEPSEEK_API_KEY` |
 
 When a capability is unavailable (e.g. Anthropic has no Whisper), the pipeline skips that stage and warns.
 
@@ -140,6 +186,8 @@ When a capability is unavailable (e.g. Anthropic has no Whisper), the pipeline s
 | `AV_EMBED_MODEL` | `text-embedding-3-small` | Embedding model |
 | `AV_CHAT_MODEL` | `gpt-4-1` | Chat/RAG model |
 | `AV_DB_PATH` | `~/.config/av/av.db` | Database location |
+| `DEEPSEEK_API_KEY` | (none) | Key for a self-hosted DeepSeek-V4.1-Flash server |
+| `SGLANG_API_KEY` | (none) | Alias for the same, matching SGLang's own naming |
 
 ## Database
 
@@ -182,5 +230,7 @@ Near-term priorities for contributors:
 - [ ] Cross-video search improvements (search across all indexed videos at once)
 - [ ] Streaming ingest progress (SSE-style output for long videos)
 - [ ] Profile presets for dense captioning (security, retail, meeting, etc.)
+- [ ] `av bench` precision measurement (currently only recall against reference windows)
+- [ ] Video fetch helper for benchmark task files (yt-dlp, with link-rot reporting)
 - [x] CI/CD with GitHub Actions (lint + test on PR) — `.github/workflows/ci.yml`
 - [x] PyPI publish workflow — `.github/workflows/publish.yml` + `PUBLISHING.md`

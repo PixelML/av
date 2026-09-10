@@ -1,0 +1,161 @@
+{
+  "receipt_version": 2,
+  "run_id": "4adafa6a-06d9-4eb4-ac10-87c18cc559d6",
+  "created_utc": "2026-09-10T14:01:46+00:00",
+  "kind": "plan",
+  "av_version": "0.1.0",
+  "environment": {
+    "python": "3.11.11",
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "ffmpeg": "ffmpeg version 7.1 Copyright (c) 2000-2024 the FFmpeg developers"
+  },
+  "provider": {
+    "note": "no provider contacted \u2014 this subcommand is arithmetic only"
+  },
+  "determinism": {
+    "aspect_ratio": 1.7777777777777777,
+    "widths": "256,512,768,1024,1536,1920",
+    "budgets": "200,400,800"
+  },
+  "cost_model": null,
+  "summary": {
+    "min_pixels_floor": 295936,
+    "min_tokens_per_frame": 184,
+    "max_tokens_per_frame": 1024,
+    "widths_for_budgets": {
+      "200": 742,
+      "400": 1050,
+      "800": 1554
+    }
+  },
+  "cells": [
+    {
+      "width": 256,
+      "height": 144,
+      "source": [
+        256,
+        144
+      ],
+      "processed": [
+        728,
+        420
+      ],
+      "grid": [
+        10,
+        18
+      ],
+      "tokens": 192,
+      "upscaled": true,
+      "downscaled": false,
+      "approximate": false
+    },
+    {
+      "width": 512,
+      "height": 288,
+      "source": [
+        512,
+        288
+      ],
+      "processed": [
+        728,
+        420
+      ],
+      "grid": [
+        10,
+        18
+      ],
+      "tokens": 192,
+      "upscaled": true,
+      "downscaled": false,
+      "approximate": false
+    },
+    {
+      "width": 768,
+      "height": 432,
+      "source": [
+        768,
+        432
+      ],
+      "processed": [
+        770,
+        434
+      ],
+      "grid": [
+        11,
+        19
+      ],
+      "tokens": 222,
+      "upscaled": false,
+      "downscaled": false,
+      "approximate": false
+    },
+    {
+      "width": 1024,
+      "height": 576,
+      "source": [
+        1024,
+        576
+      ],
+      "processed": [
+        1036,
+        588
+      ],
+      "grid": [
+        14,
+        25
+      ],
+      "tokens": 366,
+      "upscaled": false,
+      "downscaled": false,
+      "approximate": false
+    },
+    {
+      "width": 1536,
+      "height": 864,
+      "source": [
+        1536,
+        864
+      ],
+      "processed": [
+        1540,
+        868
+      ],
+      "grid": [
+        21,
+        37
+      ],
+      "tokens": 800,
+      "upscaled": false,
+      "downscaled": false,
+      "approximate": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "source": [
+        1920,
+        1080
+      ],
+      "processed": [
+        1722,
+        966
+      ],
+      "grid": [
+        23,
+        41
+      ],
+      "tokens": 968,
+      "upscaled": false,
+      "downscaled": true,
+      "approximate": true
+    }
+  ],
+  "claims": [
+    {
+      "label": "derived",
+      "statement": "Token counts are computed from the model's published vision preprocessor algorithm and reproduce its published worked examples exactly below the token ceiling. Rows marked approximate ran a shrink search and may differ by one grid step; measure those with `av bench probe`.",
+      "source": "model vision_config and reference image processor"
+    }
+  ],
+  "notes": []
+}
