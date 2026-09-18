@@ -1,8 +1,11 @@
 # Sanitized reproduction receipts
 
-These JSON files contain usage and execution metadata only. They do not include
-media, transcript or caption corpora, credentials, upload URIs, or private routes.
-The source media is not redistributed.
+These JSON files contain selected sanitized result evidence plus usage and
+execution metadata. They do not include media, transcript or caption corpora,
+credentials, upload URIs, or private routes. The source media is not redistributed.
+The native-video baseline receipt intentionally retains its benchmark question
+and returned answer, including the short explanatory rationale and timestamp,
+because those fields are needed to interpret the recorded result.
 
 | Receipt | Result |
 |---|---|

@@ -101,8 +101,13 @@ class CostAccountingTests(unittest.TestCase):
         report = experiment_report(data)
         self.assertEqual(report["list_rate_estimates"]["known_subtotal_usd"],
                          Decimal("0.3913266"))
-        self.assertEqual(report["reservations"]["total_reserved_usd"], Decimal("1.11"))
-        self.assertEqual(report["known_plus_reserved_usd"], Decimal("1.5013266"))
+        self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("3.98945825"))
+        self.assertEqual(report["reservations"]["total_retained_usd"], Decimal("1.11"))
+        self.assertEqual(
+            report["reservations"]["status_totals_usd"]["released_after_metering"],
+            Decimal("2.87945825"),
+        )
+        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("1.5013266"))
         self.assertEqual(report["remaining_cap_usd"], Decimal("3.4986734"))
         self.assertIsNone(report["unknown_costs"]["complete_total_usd"])
         self.assertEqual(
@@ -134,6 +139,52 @@ class CostAccountingTests(unittest.TestCase):
             recomputed,
         )
         self.assertFalse(receipt["limitations"]["paired_av_grok_jev_run_completed"])
+
+    def test_every_receipt_reservation_is_reconciled_with_an_explicit_state(self):
+        data = json.loads((HERE / "scenario.receipts.json").read_text())
+        reconciled = {
+            (entry.get("receipt"), entry.get("receipt_field")): entry
+            for entry in data["reservations"]
+            if entry.get("receipt_field")
+        }
+        expected = {
+            ("../receipts/caption-smoke.json", "reserved_upstream_list_usd"),
+            ("../receipts/gemini38-baseline.json", "cost.worst_case_reserved_list_estimate_usd"),
+        }
+        for key in expected:
+            with self.subTest(receipt=key[0], field=key[1]):
+                self.assertIn(key, reconciled)
+                receipt = json.loads((HERE / key[0]).resolve().read_text())
+                receipt_value = receipt
+                for field in key[1].split("."):
+                    receipt_value = receipt_value[field]
+                self.assertEqual(Decimal(reconciled[key]["usd"]), Decimal(str(receipt_value)))
+                self.assertIn(
+                    reconciled[key]["status"],
+                    {"retained", "released_after_metering", "superseded"},
+                )
+
+    def test_only_retained_reservations_count_against_headroom(self):
+        data = fixture()
+        data["reservations"] = [
+            {"name": "active", "usd": "1.00", "status": "retained", "note": "active"},
+            {
+                "name": "metered",
+                "usd": "2.00",
+                "status": "released_after_metering",
+                "note": "metered",
+            },
+            {"name": "old", "usd": "3.00", "status": "superseded", "note": "replaced"},
+        ]
+        data["cumulative_cap_usd"] = "10"
+        report = experiment_report(data)
+        self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("6.00"))
+        self.assertEqual(report["reservations"]["total_retained_usd"], Decimal("1.00"))
+        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("1.00"))
+
+        data["reservations"][0]["status"] = "retained_in_cumulative_plan"
+        with self.assertRaisesRegex(ValueError, "status must be"):
+            experiment_report(data)
 
     def test_incomplete_av_side_suppresses_baseline_ratio(self):
         data = json.loads((HERE / "scenario.receipts.json").read_text())

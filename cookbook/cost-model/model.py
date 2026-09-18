@@ -8,6 +8,7 @@ from decimal import Decimal
 from pathlib import Path
 
 BASES = {"measured", "estimated", "assumed", "unknown", "not_used"}
+RESERVATION_STATES = {"retained", "released_after_metering", "superseded"}
 ZERO = Decimal("0")
 ONE = Decimal("1")
 
@@ -134,24 +135,44 @@ def measured_usage(data: dict) -> list[dict]:
 
 
 def reservation_account(data: dict) -> dict:
-    """Track conservative cap reservations without treating them as spend."""
+    """Track reservation history while charging only retained ceilings to the cap."""
     entries = data.get("reservations", [])
     if not isinstance(entries, list):
         raise ValueError("reservations must be a list")
     terms = []
+    status_totals = {status: ZERO for status in sorted(RESERVATION_STATES)}
     for index, entry in enumerate(entries):
         if not isinstance(entry.get("name"), str) or not entry["name"].strip():
             raise ValueError(f"reservations.{index}: name is required")
         if not isinstance(entry.get("note"), str) or not entry["note"].strip():
             raise ValueError(f"reservations.{index}: note is required")
-        terms.append({
+        status = entry.get("status")
+        if status not in RESERVATION_STATES:
+            raise ValueError(
+                f"reservations.{index}: status must be retained, "
+                "released_after_metering, or superseded"
+            )
+        value = number(entry.get("usd"), f"reservations.{index}.usd")
+        row = {
             "name": f"reservation.{index}.{entry['name']}",
-            "usd": number(entry.get("usd"), f"reservations.{index}.usd"),
-            "status": entry.get("status", "retained"),
+            "usd": value,
+            "status": status,
+            "counts_against_cap": status == "retained",
             "note": entry["note"],
-        })
-    total = sum((entry["usd"] for entry in terms), ZERO)
-    return {"terms": terms, "total_reserved_usd": total}
+        }
+        for field in ("receipt", "receipt_field", "superseded_by"):
+            if field in entry:
+                row[field] = entry[field]
+        terms.append(row)
+        status_totals[status] += value
+    total_recorded = sum(status_totals.values(), ZERO)
+    total_retained = status_totals["retained"]
+    return {
+        "terms": terms,
+        "status_totals_usd": status_totals,
+        "total_recorded_usd": total_recorded,
+        "total_retained_usd": total_retained,
+    }
 
 
 def experiment_report(data: dict) -> dict:
@@ -163,7 +184,7 @@ def experiment_report(data: dict) -> dict:
     ])
     reservations = reservation_account(data)
     cap = number(data.get("cumulative_cap_usd"), "cumulative_cap_usd")
-    committed = spend["known_subtotal_usd"] + reservations["total_reserved_usd"]
+    committed = spend["known_subtotal_usd"] + reservations["total_retained_usd"]
     if committed > cap:
         raise ValueError("known list estimates plus reservations exceed cumulative cap")
     failures = [
@@ -177,9 +198,12 @@ def experiment_report(data: dict) -> dict:
         "failures": failures,
         "reservations": reservations,
         "cumulative_cap_usd": cap,
-        "known_plus_reserved_usd": committed,
+        "known_estimates_plus_retained_usd": committed,
         "remaining_cap_usd": cap - committed,
-        "cap_warning": "Reservations are conservative guardrails, not billed or estimated spend.",
+        "cap_warning": (
+            "Reservations are conservative guardrails, not billed or estimated spend; "
+            "only retained reservations count against current headroom."
+        ),
     }
 
 

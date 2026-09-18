@@ -229,21 +229,38 @@
   ],
   "reservations": [
     {
+      "name": "caption_smoke_request_ceiling",
+      "usd": "2.501",
+      "status": "released_after_metering",
+      "receipt": "../receipts/caption-smoke.json",
+      "receipt_field": "reserved_upstream_list_usd",
+      "note": "The receipt-level ceiling was released after the successful response reported usage; the measured cache-aware estimate remains in experiment_spend."
+    },
+    {
+      "name": "gemini38_native_video_baseline_ceiling",
+      "usd": "0.37845825",
+      "status": "released_after_metering",
+      "receipt": "../receipts/gemini38-baseline.json",
+      "receipt_field": "cost.worst_case_reserved_list_estimate_usd",
+      "note": "The worst-case request ceiling was released after provider usage was metered; the full-rate estimate remains in experiment_spend."
+    },
+    {
       "name": "caption_ingest",
       "usd": "0.90",
-      "status": "retained_in_cumulative_plan",
+      "status": "retained",
       "note": "Conservative reservation, not spend."
     },
     {
       "name": "query_judge_and_answer",
       "usd": "0.20",
-      "status": "retained_in_cumulative_plan",
+      "status": "retained",
       "note": "Conservative reservation, not spend."
     },
     {
       "name": "max_completion_tokens_cap_probe",
       "usd": "0.01",
-      "status": "retained_after_no_route",
+      "status": "retained",
+      "receipt": "../receipts/cap-probe-32-incompatible.json",
       "note": "Retained because usage and upstream dispatch were unknown."
     }
   ],

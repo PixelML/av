@@ -3,8 +3,8 @@
 Use AV's indexed moments as candidate evidence, then refine relevance and scene
 context before answering. This recipe describes the open-source CLI behavior;
 it does not claim that an AV run reproduces historical Composer cost or quality.
-See the [cost model](https://github.com/PixelML/av/tree/codex/jev-query-cascade/cookbook/cost-model)
-and [sanitized receipts](https://github.com/PixelML/av/tree/codex/jev-query-cascade/cookbook/receipts)
+See the [cost model](../cost-model/README.md) and
+[sanitized receipts](../receipts/README.md)
 for separate stage accounting and evidence provenance.
 
 ## Run it
@@ -45,7 +45,7 @@ silence. Import does not meter the external ASR run or verify transcript accurac
 Keep that run's token usage, approximate-timestamp caveat, and price separate from
 AV's ingestion receipt. Use only public metadata in a published sidecar.
 
-The included [`transcribe_gemini.py`](https://github.com/PixelML/av/blob/codex/jev-query-cascade/cookbook/jev-refined-ask/transcribe_gemini.py)
+The included [`transcribe_gemini.py`](transcribe_gemini.py)
 is a standard-library helper for Gemini audio transcription. It does not bundle
 media or transcripts. It accepts any readable local source supported by ffmpeg:
 
@@ -119,6 +119,9 @@ support judgment is labeled unknown, not supported.
 
 | Environment variable | Default | Purpose |
 |---|---|---|
+| AV_API_TOKEN_LIMIT_PARAMETER | max_tokens | Request field used by the primary OpenAI-compatible caption/answer provider; choose max_completion_tokens only when the endpoint requires it |
+| AV_VISION_MAX_OUTPUT_TOKENS | 200 | Requested output cap for each primary-provider single-frame caption call |
+| AV_VISION_CHUNK_MAX_OUTPUT_TOKENS | 500 | Requested output cap for each primary-provider multi-frame caption call |
 | AV_CHAT_MAX_OUTPUT_TOKENS | 1024 | Output-token cap passed to the configured answer provider |
 | AV_TYPESAFE_MODEL | jev-latest | Jev model used for judgments |
 | AV_TYPESAFE_TIMEOUT_SEC | 30 | Timeout for a judgment request |
@@ -133,6 +136,13 @@ The explicit TypeSafe endpoint is configurable with **AV_TYPESAFE_ENDPOINT**.
 The thresholds are routing settings, not calibrated probabilities of correctness.
 FTS retrieval remains the first stage: an unscoped query with no matching hits
 does not inspect the whole archive with the stronger model.
+
+The token-limit parameter and the vision/chat values above cover only AV's
+primary OpenAI-compatible frame-caption, chunk-caption, answer, and summarization
+calls. They do not configure Jev/System One, stronger sampled-frame inspection,
+`av bench`, or `av sentinel`, and they are not a provider-side enforcement or
+billing guarantee. Confirm support from the exact endpoint/model and inspect
+returned usage and finish reasons.
 
 ## Optional stronger inspection
 

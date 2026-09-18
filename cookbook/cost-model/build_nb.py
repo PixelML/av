@@ -18,9 +18,10 @@ CELLS = [
 This notebook calculates with the same model.py used by the command line.
 The checked-in receipt scenario includes completed ASR and direct-video baseline
 attempts, but no completed AV Grok+Jev comparison. Measured tokens, list-rate
-estimates, unknown costs, failures, and reservations remain separate. See
-README.md for provenance and limitations. These cells never call a provider or
-fetch media.
+estimates, unknown costs, failures, and reservation states remain separate. Only
+retained reservations count against current cap headroom; released and superseded
+ceilings remain visible as history. See README.md for provenance and limitations.
+These cells never call a provider or fetch media.
 """),
     ("code", """import json
 import sys
@@ -42,7 +43,7 @@ print(json.dumps(jsonable({
     "failures": accounting["failures"],
     "reservations": accounting["reservations"],
     "cumulative_cap_usd": accounting["cumulative_cap_usd"],
-    "known_plus_reserved_usd": accounting["known_plus_reserved_usd"],
+    "known_estimates_plus_retained_usd": accounting["known_estimates_plus_retained_usd"],
     "remaining_cap_usd": accounting["remaining_cap_usd"],
 }), indent=2))
 """),
