@@ -118,11 +118,65 @@ def test_chat_output_cap_loads_from_config_and_env_with_positive_validation(
         AVConfig(chat_max_output_tokens=0)
 
 
+def test_provider_token_limit_settings_load_from_config_and_env(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cfg_file = tmp_path / "config.json"
+    cfg_file.write_text(json.dumps({
+        "api_token_limit_parameter": "max_completion_tokens",
+        "vision_max_output_tokens": 32,
+        "vision_chunk_max_output_tokens": 64,
+    }))
+    monkeypatch.setattr("av.core.config.CONFIG_FILE_PATH", cfg_file)
+    for name in (
+        "AV_API_TOKEN_LIMIT_PARAMETER",
+        "AV_VISION_MAX_OUTPUT_TOKENS",
+        "AV_VISION_CHUNK_MAX_OUTPUT_TOKENS",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+    config = get_config()
+    assert config.api_token_limit_parameter == "max_completion_tokens"
+    assert config.vision_max_output_tokens == 32
+    assert config.vision_chunk_max_output_tokens == 64
+
+    monkeypatch.setenv("AV_API_TOKEN_LIMIT_PARAMETER", "max_tokens")
+    monkeypatch.setenv("AV_VISION_MAX_OUTPUT_TOKENS", "48")
+    monkeypatch.setenv("AV_VISION_CHUNK_MAX_OUTPUT_TOKENS", "80")
+    config = get_config()
+    assert config.api_token_limit_parameter == "max_tokens"
+    assert config.vision_max_output_tokens == 48
+    assert config.vision_chunk_max_output_tokens == 80
+
+
+@pytest.mark.parametrize(
+    ("setting", "value"),
+    [
+        ("api_token_limit_parameter", "unsupported"),
+        ("vision_max_output_tokens", 0),
+        ("vision_chunk_max_output_tokens", 0),
+    ],
+)
+def test_provider_token_limit_settings_reject_invalid_values(setting: str, value: object) -> None:
+    with pytest.raises(ValueError):
+        AVConfig(**{setting: value})
+
+
 def test_config_show_includes_chat_output_cap() -> None:
-    with patch("av.cli.config_cmd.get_config", return_value=AVConfig(chat_max_output_tokens=777)), \
+    config = AVConfig(
+        api_token_limit_parameter="max_completion_tokens",
+        vision_max_output_tokens=32,
+        vision_chunk_max_output_tokens=64,
+        chat_max_output_tokens=777,
+    )
+    with patch("av.cli.config_cmd.get_config", return_value=config), \
          patch("av.cli.config_cmd.output_json") as output:
         config_show()
-    assert output.call_args.args[0]["chat_max_output_tokens"] == 777
+    shown = output.call_args.args[0]
+    assert shown["api_token_limit_parameter"] == "max_completion_tokens"
+    assert shown["vision_max_output_tokens"] == 32
+    assert shown["vision_chunk_max_output_tokens"] == 64
+    assert shown["chat_max_output_tokens"] == 777
 
 
 def test_openai_fallback_does_not_read_oauth_unless_enabled() -> None:
@@ -135,12 +189,24 @@ def test_openai_fallback_does_not_read_oauth_unless_enabled() -> None:
 
 
 def test_openai_fallback_can_use_oauth_only_when_explicitly_enabled() -> None:
-    config = AVConfig(provider="anthropic", openai_api_key="", allow_oauth_fallback=True)
+    config = AVConfig(
+        provider="anthropic",
+        openai_api_key="",
+        allow_oauth_fallback=True,
+        api_token_limit_parameter="max_completion_tokens",
+        vision_max_output_tokens=32,
+        vision_chunk_max_output_tokens=64,
+        chat_max_output_tokens=96,
+    )
     with patch("av.providers.openai._openclaw_oauth_token", return_value="oauth-explicit"), \
          patch("av.providers.openai._codex_oauth_token") as codex:
         fallback = get_openai_config(config)
     assert fallback is not None
     assert fallback.api_key == "oauth-explicit"
+    assert fallback.api_token_limit_parameter == "max_completion_tokens"
+    assert fallback.vision_max_output_tokens == 32
+    assert fallback.vision_chunk_max_output_tokens == 64
+    assert fallback.chat_max_output_tokens == 96
     codex.assert_not_called()
 
 

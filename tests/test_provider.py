@@ -85,6 +85,38 @@ def test_llm_request_uses_configured_output_token_cap() -> None:
     assert fake_client.chat.completions.create.call_args.kwargs["max_tokens"] == 321
 
 
+def test_selected_completion_token_field_is_used_exclusively_for_all_chat_calls(
+    tmp_path: Path,
+) -> None:
+    frame = tmp_path / "frame.jpg"
+    frame.write_bytes(b"jpg")
+    response = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content="result"))],
+        usage=SimpleNamespace(prompt_tokens=4, completion_tokens=2),
+    )
+    fake_client = MagicMock()
+    fake_client.chat.completions.create.return_value = response
+    config = AVConfig(
+        api_key="explicit",
+        api_token_limit_parameter="max_completion_tokens",
+        vision_max_output_tokens=32,
+        vision_chunk_max_output_tokens=64,
+        chat_max_output_tokens=96,
+    )
+
+    with patch("av.providers.openai._client", return_value=fake_client):
+        captioner = OpenAICaptioner(config)
+        assert captioner.caption_frames([frame], [0.0])[0].text == "result"
+        assert captioner.caption_chunk([frame], [0.0], "describe") == "result"
+        llm = OpenAILLM(config)
+        assert llm.complete("question", "context") == "result"
+        assert llm.summarize("system", "content") == "result"
+
+    calls = fake_client.chat.completions.create.call_args_list
+    assert [call.kwargs["max_completion_tokens"] for call in calls] == [32, 64, 96, 96]
+    assert all("max_tokens" not in call.kwargs for call in calls)
+
+
 def test_caption_fallback_is_disabled_by_default(tmp_path: Path) -> None:
     frame = tmp_path / "frame.jpg"
     frame.write_bytes(b"jpg")

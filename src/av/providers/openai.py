@@ -123,6 +123,11 @@ def _client(config: AVConfig) -> OpenAI:
     return OpenAI(**kwargs)
 
 
+def _completion_token_limit(config: AVConfig, limit: int) -> dict[str, int]:
+    """Send exactly the configured token-limit field to compatible providers."""
+    return {config.api_token_limit_parameter: limit}
+
+
 def _call_with_retries(config: AVConfig, usage: ProviderUsage, operation):
     last_error: Exception | None = None
     for attempt in range(config.api_max_retries + 1):
@@ -267,7 +272,7 @@ class OpenAICaptioner(CaptionerProvider):
                                 ],
                             }
                         ],
-                        max_tokens=200,
+                        **_completion_token_limit(self.config, self.config.vision_max_output_tokens),
                     ),
                 )
                 text = response.choices[0].message.content or ""
@@ -315,7 +320,7 @@ class OpenAICaptioner(CaptionerProvider):
                 lambda: self.client.chat.completions.create(
                     model=self.config.vision_model,
                     messages=[{"role": "user", "content": content}],
-                    max_tokens=500,
+                    **_completion_token_limit(self.config, self.config.vision_chunk_max_output_tokens),
                 ),
             )
             return (response.choices[0].message.content or "").strip()
@@ -392,7 +397,7 @@ class OpenAILLM(LLMProvider):
                             "content": f"Context from video analysis:\n\n{context}\n\nQuestion: {prompt}",
                         },
                     ],
-                    max_tokens=self.config.chat_max_output_tokens,
+                    **_completion_token_limit(self.config, self.config.chat_max_output_tokens),
                 ),
             )
             usage = getattr(response, "usage", None)
@@ -417,6 +422,7 @@ class OpenAILLM(LLMProvider):
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_content},
                     ],
+                    **_completion_token_limit(self.config, self.config.chat_max_output_tokens),
                 ),
             )
             return (response.choices[0].message.content or "").strip()

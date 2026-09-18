@@ -27,20 +27,21 @@ _PROVIDER_MENU = [
 
 def _validate_key(provider: str, config_data: dict) -> bool:
     """Make a lightweight API call to verify the key works. Returns True on success."""
-    from av.providers.openai import _client
+    from av.providers.openai import _client, _completion_token_limit
 
     temp_config = AVConfig(
         provider=provider,
         api_base_url=config_data["api_base_url"],
         api_key=config_data.get("api_key", ""),
         chat_model=config_data["chat_model"],
+        api_token_limit_parameter=config_data.get("api_token_limit_parameter", "max_tokens"),
     )
     client = _client(temp_config)
     try:
         client.chat.completions.create(
             model=config_data["chat_model"],
             messages=[{"role": "user", "content": "hi"}],
-            max_tokens=1,
+            **_completion_token_limit(temp_config, 1),
         )
         return True
     except Exception as e:
@@ -59,10 +60,13 @@ def config_show() -> None:
         "openai_api_key": "***" if config.openai_api_key else "(not set)",
         "api_timeout_sec": config.api_timeout_sec,
         "api_max_retries": config.api_max_retries,
+        "api_token_limit_parameter": config.api_token_limit_parameter,
         "allow_oauth_fallback": config.allow_oauth_fallback,
         "allow_codex_fallback": config.allow_codex_fallback,
         "transcribe_model": config.transcribe_model or "(disabled)",
         "vision_model": config.vision_model,
+        "vision_max_output_tokens": config.vision_max_output_tokens,
+        "vision_chunk_max_output_tokens": config.vision_chunk_max_output_tokens,
         "embed_model": config.embed_model or "(disabled)",
         "chat_model": config.chat_model,
         "chat_max_output_tokens": config.chat_max_output_tokens,

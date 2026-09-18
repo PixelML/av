@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -55,12 +56,16 @@ class AVConfig(BaseSettings):
     openai_api_key: str = Field(default="")
     api_timeout_sec: float = Field(default=120.0, gt=0)
     api_max_retries: int = Field(default=1, ge=0, le=3)
+    # Select one request field; provider semantics and enforcement can differ.
+    api_token_limit_parameter: Literal["max_tokens", "max_completion_tokens"] = "max_tokens"
     allow_oauth_fallback: bool = Field(default=False)
     allow_codex_fallback: bool = Field(default=False)
 
     # Models
     transcribe_model: str = Field(default=DEFAULT_TRANSCRIBE_MODEL)
     vision_model: str = Field(default=DEFAULT_VISION_MODEL)
+    vision_max_output_tokens: int = Field(default=200, gt=0)
+    vision_chunk_max_output_tokens: int = Field(default=500, gt=0)
     embed_model: str = Field(default=DEFAULT_EMBED_MODEL)
     chat_model: str = Field(default=DEFAULT_CHAT_MODEL)
     chat_max_output_tokens: int = Field(default=1024, gt=0)
@@ -111,10 +116,13 @@ def get_config(db_path: Path | None = None) -> AVConfig:
         "openai_api_key",
         "api_timeout_sec",
         "api_max_retries",
+        "api_token_limit_parameter",
         "allow_oauth_fallback",
         "allow_codex_fallback",
         "transcribe_model",
         "vision_model",
+        "vision_max_output_tokens",
+        "vision_chunk_max_output_tokens",
         "embed_model",
         "chat_model",
         "chat_max_output_tokens",
@@ -187,11 +195,14 @@ def get_openai_config(config: AVConfig) -> AVConfig | None:
         api_key=key,
         api_timeout_sec=config.api_timeout_sec,
         api_max_retries=config.api_max_retries,
+        api_token_limit_parameter=config.api_token_limit_parameter,
         allow_oauth_fallback=False,
         allow_codex_fallback=config.allow_codex_fallback,
         transcribe_model="whisper-1",
         embed_model="text-embedding-3-small",
         vision_model=config.vision_model,
+        vision_max_output_tokens=config.vision_max_output_tokens,
+        vision_chunk_max_output_tokens=config.vision_chunk_max_output_tokens,
         chat_model=config.chat_model,
         chat_max_output_tokens=config.chat_max_output_tokens,
     )
