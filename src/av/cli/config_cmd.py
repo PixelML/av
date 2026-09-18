@@ -57,10 +57,26 @@ def config_show() -> None:
         "api_base_url": config.api_base_url,
         "api_key": "***" if config.api_key else "(not set)",
         "openai_api_key": "***" if config.openai_api_key else "(not set)",
+        "api_timeout_sec": config.api_timeout_sec,
+        "api_max_retries": config.api_max_retries,
+        "allow_oauth_fallback": config.allow_oauth_fallback,
+        "allow_codex_fallback": config.allow_codex_fallback,
         "transcribe_model": config.transcribe_model or "(disabled)",
         "vision_model": config.vision_model,
         "embed_model": config.embed_model or "(disabled)",
         "chat_model": config.chat_model,
+        "typesafe_api_key": "***" if config.typesafe_api_key else "(not set)",
+        "typesafe_endpoint": config.typesafe_endpoint,
+        "typesafe_model": config.typesafe_model,
+        "refine_enabled": config.refine_enabled,
+        "refine_relevance_min": config.refine_relevance_min,
+        "refine_support_min": config.refine_support_min,
+        "refine_max_scenes": config.refine_max_scenes,
+        "refine_batch_size": config.refine_batch_size,
+        "refine_context_events": config.refine_context_events,
+        "strong_vision_api_base_url": config.strong_vision_api_base_url or "(not set)",
+        "strong_vision_api_key": "***" if config.strong_vision_api_key else "(not set)",
+        "strong_vision_model": config.strong_vision_model or "(not set)",
         "db_path": str(config.db_path),
     })
 
@@ -96,6 +112,7 @@ def config_setup() -> None:
 
     # Resolve API key based on provider
     if provider_key == "openai-oauth":
+        config_data["allow_oauth_fallback"] = True
         token = _openclaw_oauth_token() or _codex_oauth_token()
         if token:
             _console.print("  [green]✓[/green] Found Codex OAuth token")

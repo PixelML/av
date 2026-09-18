@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from av.core.config import AVConfig, _load_config_file, get_config, save_config
+from av.core.config import AVConfig, _load_config_file, get_config, get_openai_config, save_config
 from av.core.constants import CONFIG_FILE_PATH, PROVIDER_PRESETS
 
 
@@ -99,6 +99,25 @@ def test_env_var_overrides_config_file(tmp_path: Path, monkeypatch: pytest.Monke
     assert config.chat_model == "my-custom-model"
     # Config file value still applies for non-overridden fields
     assert config.provider == "anthropic"
+
+
+def test_openai_fallback_does_not_read_oauth_unless_enabled() -> None:
+    config = AVConfig(provider="anthropic", openai_api_key="", allow_oauth_fallback=False)
+    with patch("av.providers.openai._openclaw_oauth_token") as openclaw, \
+         patch("av.providers.openai._codex_oauth_token") as codex:
+        assert get_openai_config(config) is None
+    openclaw.assert_not_called()
+    codex.assert_not_called()
+
+
+def test_openai_fallback_can_use_oauth_only_when_explicitly_enabled() -> None:
+    config = AVConfig(provider="anthropic", openai_api_key="", allow_oauth_fallback=True)
+    with patch("av.providers.openai._openclaw_oauth_token", return_value="oauth-explicit"), \
+         patch("av.providers.openai._codex_oauth_token") as codex:
+        fallback = get_openai_config(config)
+    assert fallback is not None
+    assert fallback.api_key == "oauth-explicit"
+    codex.assert_not_called()
 
 
 def test_db_path_override() -> None:

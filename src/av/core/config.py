@@ -53,12 +53,40 @@ class AVConfig(BaseSettings):
     api_base_url: str = Field(default="https://api.openai.com/v1")
     api_key: str = Field(default="")
     openai_api_key: str = Field(default="")
+    api_timeout_sec: float = Field(default=120.0, gt=0)
+    api_max_retries: int = Field(default=1, ge=0, le=3)
+    allow_oauth_fallback: bool = Field(default=False)
+    allow_codex_fallback: bool = Field(default=False)
 
     # Models
     transcribe_model: str = Field(default=DEFAULT_TRANSCRIBE_MODEL)
     vision_model: str = Field(default=DEFAULT_VISION_MODEL)
     embed_model: str = Field(default=DEFAULT_EMBED_MODEL)
     chat_model: str = Field(default=DEFAULT_CHAT_MODEL)
+
+    # Optional System One query refinement. A credential enables refinement by
+    # default; callers can still opt out per request.
+    typesafe_api_key: str = Field(default="")
+    typesafe_endpoint: str = Field(default="https://api.typesafe.ai/v1/systemone")
+    typesafe_model: str = Field(default="jev-latest")
+    typesafe_timeout_sec: float = Field(default=30.0, gt=0)
+    typesafe_max_retries: int = Field(default=1, ge=0, le=3)
+    refine_enabled: bool = Field(default=True)
+    refine_relevance_min: float = Field(default=0.5, ge=0, le=1)
+    refine_support_min: float = Field(default=0.5, ge=0, le=1)
+    refine_max_scenes: int = Field(default=8, ge=1, le=50)
+    refine_batch_size: int = Field(default=10, ge=1, le=50)
+    refine_context_events: int = Field(default=3, ge=0, le=12)
+
+    # Optional stronger sampled-frame inspection after an unsupported answer.
+    strong_vision_api_base_url: str = Field(default="")
+    strong_vision_api_key: str = Field(default="")
+    strong_vision_model: str = Field(default="")
+    inspection_max_windows: int = Field(default=2, ge=0, le=8)
+    inspection_max_seconds: float = Field(default=120.0, ge=0)
+    inspection_max_frames: int = Field(default=12, ge=0, le=128)
+    inspection_max_attempts: int = Field(default=1, ge=1, le=2)
+    inspection_dense_pass: bool = Field(default=False)
 
     # Database
     db_path: Path = Field(default=DEFAULT_DB_PATH)
@@ -80,13 +108,37 @@ def get_config(db_path: Path | None = None) -> AVConfig:
         "api_base_url",
         "api_key",
         "openai_api_key",
+        "api_timeout_sec",
+        "api_max_retries",
+        "allow_oauth_fallback",
+        "allow_codex_fallback",
         "transcribe_model",
         "vision_model",
         "embed_model",
         "chat_model",
+        "typesafe_api_key",
+        "typesafe_endpoint",
+        "typesafe_model",
+        "typesafe_timeout_sec",
+        "typesafe_max_retries",
+        "refine_enabled",
+        "refine_relevance_min",
+        "refine_support_min",
+        "refine_max_scenes",
+        "refine_batch_size",
+        "refine_context_events",
+        "strong_vision_api_base_url",
+        "strong_vision_api_key",
+        "strong_vision_model",
+        "inspection_max_windows",
+        "inspection_max_seconds",
+        "inspection_max_frames",
+        "inspection_max_attempts",
+        "inspection_dense_pass",
     ):
         env_name = f"AV_{key.upper()}"
-        if key in file_data and env_name not in os.environ:
+        alias_is_set = key == "typesafe_api_key" and "TYPESAFE_API_KEY" in os.environ
+        if key in file_data and env_name not in os.environ and not alias_is_set:
             init_kwargs[key] = file_data[key]
 
     config = AVConfig(**init_kwargs)
@@ -94,6 +146,11 @@ def get_config(db_path: Path | None = None) -> AVConfig:
     # If openai_api_key not set explicitly, try OPENAI_API_KEY env var as fallback
     if not config.openai_api_key:
         config.openai_api_key = os.environ.get("OPENAI_API_KEY", "")
+
+    if "AV_TYPESAFE_API_KEY" not in os.environ:
+        config.typesafe_api_key = os.environ.get("TYPESAFE_API_KEY", config.typesafe_api_key)
+    if "AV_TYPESAFE_MODEL" not in os.environ:
+        config.typesafe_model = os.environ.get("TYPESAFE_DEFAULT_MODEL", config.typesafe_model)
 
     if db_path is not None:
         config.db_path = db_path
@@ -115,7 +172,7 @@ def get_openai_config(config: AVConfig) -> AVConfig | None:
     key = (config.openai_api_key or "").strip()
 
     # Fallback: Codex OAuth tokens (same mechanism as _resolve_api_key in openai.py)
-    if not key:
+    if not key and config.allow_oauth_fallback:
         from av.providers.openai import _codex_oauth_token, _openclaw_oauth_token
         key = _openclaw_oauth_token() or _codex_oauth_token() or ""
 
@@ -126,6 +183,10 @@ def get_openai_config(config: AVConfig) -> AVConfig | None:
         provider="openai",
         api_base_url="https://api.openai.com/v1",
         api_key=key,
+        api_timeout_sec=config.api_timeout_sec,
+        api_max_retries=config.api_max_retries,
+        allow_oauth_fallback=False,
+        allow_codex_fallback=config.allow_codex_fallback,
         transcribe_model="whisper-1",
         embed_model="text-embedding-3-small",
         vision_model=config.vision_model,

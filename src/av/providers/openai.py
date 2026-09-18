@@ -6,6 +6,7 @@ import base64
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 from openai import OpenAI
@@ -16,11 +17,13 @@ from av.providers.base import (
     Caption,
     CaptionerProvider,
     ChunkCaption,
+    CompletionResult,
     EmbedderProvider,
     LLMProvider,
     TranscriberProvider,
     TranscriptSegment,
 )
+from av.providers.usage import ProviderUsage
 
 
 def _token_from_codex_auth_file(auth_path: Path) -> str | None:
@@ -97,9 +100,10 @@ def _resolve_api_key(config: AVConfig) -> str:
         return deepseek_key(config)
 
     # Prefer OpenClaw auth-profile OAuth (often fresher), then Codex CLI cache.
-    oauth = _openclaw_oauth_token() or _codex_oauth_token()
-    if oauth:
-        return oauth
+    if config.allow_oauth_fallback:
+        oauth = _openclaw_oauth_token() or _codex_oauth_token()
+        if oauth:
+            return oauth
 
     # Final fallback maintains previous explicit failure behavior.
     return configured or "no-key"
@@ -109,11 +113,33 @@ def _client(config: AVConfig) -> OpenAI:
     kwargs: dict = {
         "base_url": config.api_base_url,
         "api_key": _resolve_api_key(config),
+        "timeout": config.api_timeout_sec,
+        # Retries are explicit below so receipts count every attempted request.
+        "max_retries": 0,
     }
     # Anthropic's OpenAI-compatible endpoint requires anthropic-version header
     if config.provider == "anthropic":
         kwargs["default_headers"] = {"anthropic-version": "2023-06-01"}
     return OpenAI(**kwargs)
+
+
+def _call_with_retries(config: AVConfig, usage: ProviderUsage, operation):
+    last_error: Exception | None = None
+    for attempt in range(config.api_max_retries + 1):
+        try:
+            response = operation()
+        except Exception as exc:
+            usage.record_failure()
+            last_error = exc
+            if attempt < config.api_max_retries:
+                time.sleep(min(0.25 * (2**attempt), 1.0))
+                continue
+            raise
+        usage.record_success(getattr(response, "usage", None))
+        return response
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError("provider request did not run")
 
 
 
@@ -171,16 +197,20 @@ class OpenAITranscriber(TranscriberProvider):
     def __init__(self, config: AVConfig):
         self.config = config
         self.client = _client(config)
+        self.usage = ProviderUsage()
 
     def transcribe(self, audio_path: Path) -> list[TranscriptSegment]:
         try:
-            with open(audio_path, "rb") as f:
-                response = self.client.audio.transcriptions.create(
-                    model=self.config.transcribe_model,
-                    file=f,
-                    response_format="verbose_json",
-                    timestamp_granularities=["segment"],
-                )
+            def operation():
+                with open(audio_path, "rb") as f:
+                    return self.client.audio.transcriptions.create(
+                        model=self.config.transcribe_model,
+                        file=f,
+                        response_format="verbose_json",
+                        timestamp_granularities=["segment"],
+                    )
+
+            response = _call_with_retries(self.config, self.usage, operation)
         except Exception as e:
             raise APIError(f"Transcription failed: {e}", provider="openai") from e
 
@@ -203,6 +233,7 @@ class OpenAICaptioner(CaptionerProvider):
     def __init__(self, config: AVConfig):
         self.config = config
         self.client = _client(config)
+        self.usage = ProviderUsage()
 
     def caption_frames(
         self, frame_paths: list[Path], timestamps: list[float], prompt: str | None = None
@@ -216,30 +247,36 @@ class OpenAICaptioner(CaptionerProvider):
                 ext = fp.suffix.lstrip(".").lower()
                 if ext == "jpg":
                     ext = "jpeg"
-                response = self.client.chat.completions.create(
-                    model=self.config.vision_model,
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": prompt or "Describe this video frame in one detailed sentence. Focus on actions, objects, and scene context.",
-                                },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {"url": f"data:image/{ext};base64,{img_data}"},
-                                },
-                            ],
-                        }
-                    ],
-                    max_tokens=200,
+                response = _call_with_retries(
+                    self.config,
+                    self.usage,
+                    lambda: self.client.chat.completions.create(
+                        model=self.config.vision_model,
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": prompt or "Describe this video frame in one detailed sentence. Focus on actions, objects, and scene context.",
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {"url": f"data:image/{ext};base64,{img_data}"},
+                                    },
+                                ],
+                            }
+                        ],
+                        max_tokens=200,
+                    ),
                 )
                 text = response.choices[0].message.content or ""
                 captions.append(Caption(timestamp_sec=ts, text=text.strip(), frame_path=str(fp)))
             except Exception as e:
                 err = str(e)
-                if "Missing scopes: model.request" in err or "model_not_found" in err:
+                if self.config.allow_codex_fallback and (
+                    "Missing scopes: model.request" in err or "model_not_found" in err
+                ):
                     try:
                         fallback = _codex_cli_caption(
                             prompt or "Describe this frame in one concise sentence with concrete actions and key objects.",
@@ -272,15 +309,21 @@ class OpenAICaptioner(CaptionerProvider):
             })
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.config.vision_model,
-                messages=[{"role": "user", "content": content}],
-                max_tokens=500,
+            response = _call_with_retries(
+                self.config,
+                self.usage,
+                lambda: self.client.chat.completions.create(
+                    model=self.config.vision_model,
+                    messages=[{"role": "user", "content": content}],
+                    max_tokens=500,
+                ),
             )
             return (response.choices[0].message.content or "").strip()
         except Exception as e:
             err = str(e)
-            if "Missing scopes: model.request" in err or "model_not_found" in err:
+            if self.config.allow_codex_fallback and (
+                "Missing scopes: model.request" in err or "model_not_found" in err
+            ):
                 return _codex_cli_caption(prompt, frame_paths)
             raise
 
@@ -290,14 +333,19 @@ class OpenAIEmbedder(EmbedderProvider):
         self.config = config
         self.client = _client(config)
         self._dim: int | None = None
+        self.usage = ProviderUsage()
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
         try:
-            response = self.client.embeddings.create(
-                model=self.config.embed_model,
-                input=texts,
+            response = _call_with_retries(
+                self.config,
+                self.usage,
+                lambda: self.client.embeddings.create(
+                    model=self.config.embed_model,
+                    input=texts,
+                ),
             )
             vecs = [item.embedding for item in response.data]
             if vecs and self._dim is None:
@@ -322,35 +370,53 @@ class OpenAILLM(LLMProvider):
     def __init__(self, config: AVConfig):
         self.config = config
         self.client = _client(config)
+        self.usage = ProviderUsage()
 
     def complete(self, prompt: str, context: str) -> str:
+        return self.complete_with_usage(prompt, context).text
+
+    def complete_with_usage(self, prompt: str, context: str) -> CompletionResult:
         try:
-            response = self.client.chat.completions.create(
-                model=self.config.chat_model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": VIDEO_QA_SYSTEM_PROMPT,
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Context from video analysis:\n\n{context}\n\nQuestion: {prompt}",
-                    },
-                ],
+            response = _call_with_retries(
+                self.config,
+                self.usage,
+                lambda: self.client.chat.completions.create(
+                    model=self.config.chat_model,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": VIDEO_QA_SYSTEM_PROMPT,
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Context from video analysis:\n\n{context}\n\nQuestion: {prompt}",
+                        },
+                    ],
+                ),
             )
-            return (response.choices[0].message.content or "").strip()
+            usage = getattr(response, "usage", None)
+            return CompletionResult(
+                text=(response.choices[0].message.content or "").strip(),
+                input_tokens=getattr(usage, "prompt_tokens", None) if usage else None,
+                output_tokens=getattr(usage, "completion_tokens", None) if usage else None,
+                usage=self.usage.snapshot(),
+            )
         except Exception as e:
             raise APIError(f"Chat completion failed: {e}", provider="openai") from e
 
     def summarize(self, system_prompt: str, user_content: str) -> str:
         """Generic system/user LLM call for cascade summarization."""
         try:
-            response = self.client.chat.completions.create(
-                model=self.config.chat_model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_content},
-                ],
+            response = _call_with_retries(
+                self.config,
+                self.usage,
+                lambda: self.client.chat.completions.create(
+                    model=self.config.chat_model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_content},
+                    ],
+                ),
             )
             return (response.choices[0].message.content or "").strip()
         except Exception as e:

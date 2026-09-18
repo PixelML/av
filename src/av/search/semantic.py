@@ -30,6 +30,7 @@ def search(
 ) -> dict:
     """Search artifacts using FTS5, optionally reranked by cosine similarity."""
     start_time = time.time()
+    embedding_usage = None
 
     # Step 1: FTS search (always available)
     fts_results = repo.search_fts(query, limit=limit * 3, video_id=video_id)
@@ -49,6 +50,7 @@ def search(
 
     if embeddings:
         # Embed the query
+        embedder = None
         try:
             embedder = OpenAIEmbedder(get_openai_config(config) or config)
             query_vecs = embedder.embed([query])
@@ -73,6 +75,7 @@ def search(
                             video_id=r.video_id,
                             filename=r.filename,
                             timestamp_sec=r.timestamp_sec,
+                            end_sec=r.end_sec,
                             timestamp_formatted=r.timestamp_formatted,
                             source_type=r.source_type,
                             text=r.text,
@@ -82,6 +85,9 @@ def search(
         except Exception:
             # Fall back to FTS-only results if embedding fails
             fts_results = fts_results[:limit]
+        finally:
+            if embedder is not None:
+                embedding_usage = embedder.usage.snapshot()
     else:
         fts_results = fts_results[:limit]
 
@@ -91,4 +97,5 @@ def search(
         "results": [r.model_dump() for r in fts_results],
         "total_results": len(fts_results),
         "search_time_ms": elapsed_ms,
+        "embedding_usage": embedding_usage,
     }

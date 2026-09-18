@@ -29,6 +29,14 @@ class ChunkCaption:
     frame_count: int
 
 
+@dataclass
+class CompletionResult:
+    text: str
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    usage: dict | None = None
+
+
 class TranscriberProvider(ABC):
     @abstractmethod
     def transcribe(self, audio_path: Path) -> list[TranscriptSegment]:
