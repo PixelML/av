@@ -55,8 +55,9 @@ usage remains `null`.
 Missing, malformed, or out-of-range System One probabilities are treated as a
 refinement failure: `av` reports the fallback and does not invent a confidence.
 
-See the [AV ask refinement cookbook](cookbook/README.md) for a reproducible recipe,
-offline cost arithmetic, and receipt provenance.
+See the [AV ask refinement cookbook](https://github.com/PixelML/av/tree/codex/jev-query-cascade/cookbook)
+for the unmerged reproducible recipe, offline cost arithmetic, and sanitized
+receipt provenance.
 
 FTS5 remains the first retrieval stage. An unscoped query with zero FTS matches does
 not scan the video archive or invoke sampled-frame inspection.

@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "source": {
+    "sha256": "863559e8630cae8019139edc03e0a9ea0437aac2c2f48a811f2d31f9aa14a575",
+    "duration_seconds": 4500.044,
+    "provenance_url": "https://www.youtube.com/watch?v=Bpw9HyfUpCw",
+    "original_clip_start_sec": 9300,
+    "original_clip_end_sec": 13800,
+    "public_availability_currently_verified": false,
+    "license": "unknown; media not redistributed"
+  },
+  "model_requested": "gemini-3.5-flash-lite",
+  "model_returned": null,
+  "rates": {
+    "input_per_million": 0.3,
+    "output_per_million": 2.5,
+    "source": "https://ai.google.dev/gemini-api/docs/pricing",
+    "as_of": "2026-09-18",
+    "tier": "standard paid list rates; account billing/free tier unverified"
+  },
+  "successful_indexing_asr": {
+    "generation_requests": 75,
+    "input_tokens": 118228,
+    "output_tokens": 13241,
+    "cached_tokens": null,
+    "thinking_tokens": null,
+    "token_metering": "measured API response usage",
+    "summed_request_wall_sec": 258.87398497699905,
+    "end_to_end_wall_sec": null,
+    "usd": 0.06857089999999999,
+    "basis": "estimated",
+    "note": "Measured tokens multiplied by official list rates, not billed dollars; cache and thinking absent meter remain unknown."
+  },
+  "failed_alignment_experiment": {
+    "generation_requests": 1,
+    "input_tokens": 7634,
+    "output_tokens": 1866,
+    "cached_tokens": null,
+    "thinking_tokens": null,
+    "token_metering": "measured API response usage",
+    "summed_request_wall_sec": 8.694261409000319,
+    "end_to_end_wall_sec": null,
+    "usd": 0.0069552,
+    "basis": "estimated",
+    "note": "Measured tokens multiplied by official list rates, not billed dollars; cache and thinking absent meter remain unknown."
+  },
+  "sampling": {
+    "audio": "complete source audio, mono16k FLAC",
+    "windows": 75,
+    "window_seconds": 60,
+    "last_window_seconds": 60.044,
+    "transcript_artifacts": 75,
+    "silence_windows": 0,
+    "timestamps": "coarse fixed source windows; not speech alignment",
+    "word_completeness": "unverified",
+    "all_source_audio_submitted": true
+  },
+  "request_policy": {
+    "automatic_retries": 0,
+    "concurrency": 2,
+    "timeout_seconds": 90,
+    "max_input_count_tokens": 3500,
+    "max_output_tokens": 2048,
+    "explicit_cache_requested": false,
+    "cached_token_hit_rate": null
+  },
+  "validation": {
+    "all75accepted": true,
+    "singleton_array_chunk12_normalized_without_new_call": true,
+    "prior300sec_attempt_rejected": "invalid generated timestamps; charged attempt retained"
+  },
+  "infra_cost": {
+    "usd": null,
+    "basis": "unknown",
+    "note": "Media extraction/hosting/storage/network not billed in receipt"
+  }
+}

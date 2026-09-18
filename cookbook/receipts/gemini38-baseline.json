@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "stage": "native_video_baseline_query",
+  "status": "completed",
+  "recorded_at": "2026-09-18",
+  "source": {
+    "sha256": "863559e8630cae8019139edc03e0a9ea0437aac2c2f48a811f2d31f9aa14a575",
+    "duration_seconds": 4500.044,
+    "native_video_and_audio": true,
+    "media_redistributed": false
+  },
+  "model_requested": "gemini-3.8-flash",
+  "model_returned": "gemini-3.8-flash",
+  "question": "What percentage did manufacturing expand by in the second quarter and what drove it?",
+  "answer": "Manufacturing expanded by 12.2% in the second quarter, driven largely by AI-related demand for electronics and precision engineering (19:51–20:00).",
+  "sampling": {
+    "fps": 1.0,
+    "media_resolution": "low",
+    "media_processing": "static",
+    "input": "native video and audio",
+    "comparison_note": "This is not sampling-equivalent to the incomplete AV arm."
+  },
+  "request_policy": {
+    "generation_attempts": 1,
+    "automatic_retries": 0,
+    "max_output_tokens_including_thoughts": 8192,
+    "thinking_level": "high",
+    "explicit_cache": false
+  },
+  "usage": {
+    "input_tokens": 409548,
+    "output_tokens": 39,
+    "thinking_tokens": 205,
+    "cached_tokens": null,
+    "token_metering": "provider usage metadata"
+  },
+  "timing": {
+    "upload_seconds": 12.834643709000375,
+    "file_processing_seconds": 169.24631727199812,
+    "precount_seconds": 0.3055749349987309,
+    "query_seconds": 50.40440310399936
+  },
+  "cost": {
+    "full_rate_list_estimate_usd": 0.308076,
+    "worst_case_reserved_list_estimate_usd": 0.37845825,
+    "basis": "Measured tokens multiplied by published paid-tier list rates; not a billing invoice.",
+    "provider_or_proxy_billed_usd": null,
+    "compute_storage_network_usd": null
+  },
+  "limitations": {
+    "answer_quality_reviewed": false,
+    "paired_av_grok_jev_run_completed": false,
+    "speed_cost_or_quality_parity_claimed": false,
+    "missing_usage_policy": "Absent fields remain unknown; no absent field is treated as measured zero."
+  },
+  "private_upload_uri_included": false,
+  "credentials_included": false
+}
