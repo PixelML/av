@@ -163,7 +163,7 @@ def ask(
     """Answer a question using RAG over video artifacts."""
     # Step 1: Retrieve relevant context
     search_result = search(
-        question, repo, config, limit=top_k, video_id=video_id
+        question, repo, config, limit=top_k, video_id=video_id, natural_language=True
     )
 
     raw_results = search_result.get("results", [])

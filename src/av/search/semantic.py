@@ -9,6 +9,7 @@ from av.core.config import AVConfig, get_openai_config
 from av.db.models import SearchResult
 from av.db.repository import Repository
 from av.providers.openai import OpenAIEmbedder
+from av.search.query import natural_language_fts_query
 
 
 def _cosine_similarity(a: list[float], b: list[float]) -> float:
@@ -27,13 +28,18 @@ def search(
     *,
     limit: int = 10,
     video_id: str | None = None,
+    natural_language: bool = False,
 ) -> dict:
     """Search artifacts using FTS5, optionally reranked by cosine similarity."""
     start_time = time.time()
     embedding_usage = None
 
-    # Step 1: FTS search (always available)
-    fts_results = repo.search_fts(query, limit=limit * 3, video_id=video_id)
+    # av ask uses lexical candidates; av search retains explicit FTS semantics.
+    candidate_query = natural_language_fts_query(query) if natural_language else query
+    fts_results = (
+        repo.search_fts(candidate_query, limit=limit * 3, video_id=video_id)
+        if candidate_query else []
+    )
 
     if not fts_results:
         elapsed_ms = int((time.time() - start_time) * 1000)
