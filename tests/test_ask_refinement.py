@@ -12,6 +12,7 @@ from av.core.config import AVConfig, get_config
 from av.db.models import ArtifactRecord, VideoRecord
 from av.db.repository import Repository
 from av.providers.base import CompletionResult
+from av.providers.usage import ProviderUsage
 from av.search.inspection import (
     ExplicitVisionClient,
     InspectionWindow,
@@ -303,6 +304,58 @@ def test_temporal_events_attach_interleaved_modalities_without_false_gap() -> No
     assert "there" in events[0]["text"]
 
 
+@pytest.mark.parametrize(
+    (
+        "caption_start",
+        "caption_end",
+        "transcript_start",
+        "transcript_end",
+        "expected_start",
+        "expected_end",
+    ),
+    [
+        (10.0, 20.0, 5.0, 25.0, 5.0, 25.0),
+        (10.0, 10.0, 10.0, 15.0, 10.0, 15.0),
+    ],
+)
+def test_scene_uses_containing_temporal_event_bounds_without_boundary_call(
+    repo: Repository,
+    tmp_path: Path,
+    caption_start: float,
+    caption_end: float,
+    transcript_start: float,
+    transcript_end: float,
+    expected_start: float,
+    expected_end: float,
+) -> None:
+    path = tmp_path / "v.mp4"
+    path.write_bytes(b"fake")
+    repo.insert_video(_video("v", path))
+    repo.insert_artifacts_batch([
+        _artifact("caption-hit", "v", caption_start, caption_end, "target caption", "caption"),
+        _artifact(
+            "transcript-overlap",
+            "v",
+            transcript_start,
+            transcript_end,
+            "overlapping speech",
+            "transcript",
+        ),
+    ])
+    raw = [repo.search_fts("target", limit=1, video_id="v")[0].model_dump()]
+    client = FakeSystemOne([0.9])
+    refined, _, _ = refine_search_results(
+        "target",
+        raw,
+        repo,
+        AVConfig(typesafe_api_key="test", refine_context_events=3),
+        client=client,
+    )
+    assert client.boundary_calls == 0
+    assert refined[0]["timestamp_sec"] == expected_start
+    assert refined[0]["end_sec"] == expected_end
+
+
 def test_strict_hydration_excludes_touching_chunks_and_preserves_hit_texts(
     repo: Repository, tmp_path: Path
 ) -> None:
@@ -508,6 +561,74 @@ def test_refinement_fallback_returns_partial_stage_usage(repo: Repository, tmp_p
         )
     assert result["stage_usage"]["relevance"]["requests"] == 2
     assert result["stage_usage"]["relevance"]["input_tokens_complete"] is False
+
+
+def test_refined_answer_failure_preserves_receipts_and_is_sanitized(
+    repo: Repository, tmp_path: Path
+) -> None:
+    _seed_video(repo, tmp_path, "v1", prefix="cake")
+
+    class FailingLLM:
+        def __init__(self, config: AVConfig) -> None:
+            self.usage = ProviderUsage()
+
+        def complete_with_usage(self, prompt: str, context: str) -> CompletionResult:
+            self.usage.record_failure()
+            raise RuntimeError("https://private.example/v1 secret-token")
+
+    fake = FakeSystemOne([0.9] * 30)
+    with patch("av.search.rag.SystemOneClient", return_value=fake), \
+         patch("av.search.rag.OpenAILLM", FailingLLM), \
+         patch("av.search.rag.judge_answer_support") as support, \
+         patch("av.search.rag.inspect_with_stronger_vision") as inspect:
+        result = ask(
+            "cake",
+            repo,
+            AVConfig(typesafe_api_key="test", embed_model=""),
+            video_id="v1",
+        )
+    support.assert_not_called()
+    inspect.assert_not_called()
+    assert result["route"] == "refined_answer_failed"
+    assert result["evidence_status"] == "answer_unavailable"
+    assert result["stage_usage"]["relevance"]["requests"] > 0
+    assert result["stage_usage"]["answer"]["requests"] == 1
+    assert result["stage_usage"]["answer"]["failed_requests"] == 1
+    assert result["ask_settings"]["chat_max_output_tokens"] == 1024
+    encoded = json.dumps(result)
+    assert "private.example" not in encoded
+    assert "secret-token" not in encoded
+
+
+def test_legacy_answer_failure_preserves_attempted_usage_and_is_sanitized(
+    repo: Repository, tmp_path: Path
+) -> None:
+    _seed_video(repo, tmp_path, "v1", prefix="cake")
+
+    class FailingLLM:
+        def __init__(self, config: AVConfig) -> None:
+            self.usage = ProviderUsage()
+
+        def complete_with_usage(self, prompt: str, context: str) -> CompletionResult:
+            self.usage.record_failure()
+            raise RuntimeError("https://private.example/v1 secret-token")
+
+    with patch("av.search.rag.OpenAILLM", FailingLLM):
+        result = ask(
+            "cake",
+            repo,
+            AVConfig(embed_model=""),
+            video_id="v1",
+            refine=False,
+        )
+    assert result["route"] == "legacy_answer_failed"
+    assert result["evidence_status"] == "answer_unavailable"
+    assert "embedding" in result["stage_usage"]
+    assert result["stage_usage"]["answer"]["requests"] == 1
+    assert result["stage_usage"]["answer"]["failed_requests"] == 1
+    encoded = json.dumps(result)
+    assert "private.example" not in encoded
+    assert "secret-token" not in encoded
 
 
 def test_full_window_timestamp_plan_covers_start_and_end() -> None:
@@ -831,7 +952,18 @@ def test_config_file_env_priority_and_secret_fields(tmp_path: Path, monkeypatch:
 
 def test_no_refine_preserves_legacy_contract(repo: Repository, tmp_path: Path) -> None:
     _seed_video(repo, tmp_path, "v1", prefix="cake")
-    with patch("av.search.rag.OpenAILLM", FakeLLM):
+    raw = [repo.search_fts("cake", limit=1, video_id="v1")[0].model_dump()]
+    embedding_usage = {
+        "requests": 1,
+        "input_tokens": 4,
+        "output_tokens": 0,
+        "input_tokens_complete": True,
+        "output_tokens_complete": True,
+    }
+    with patch(
+        "av.search.rag.search",
+        return_value={"results": raw, "embedding_usage": embedding_usage},
+    ), patch("av.search.rag.OpenAILLM", FakeLLM):
         result = ask(
             "cake",
             repo,
@@ -839,5 +971,10 @@ def test_no_refine_preserves_legacy_contract(repo: Repository, tmp_path: Path) -
             video_id="v1",
             refine=False,
         )
-    assert set(result) == {"answer", "citations", "confidence"}
-    assert result["answer"] == "legacy answer"
+    assert result["answer"] == "refined answer"
+    assert result["route"] == "legacy"
+    assert result["evidence_status"] == "raw_unjudged"
+    assert result["confidence_basis"] == "retrieval_heuristic"
+    assert result["warnings"] == []
+    assert result["stage_usage"]["embedding"] == embedding_usage
+    assert result["stage_usage"]["answer"]["requests"] == 1

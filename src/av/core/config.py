@@ -63,6 +63,7 @@ class AVConfig(BaseSettings):
     vision_model: str = Field(default=DEFAULT_VISION_MODEL)
     embed_model: str = Field(default=DEFAULT_EMBED_MODEL)
     chat_model: str = Field(default=DEFAULT_CHAT_MODEL)
+    chat_max_output_tokens: int = Field(default=1024, gt=0)
 
     # Optional System One query refinement. A credential enables refinement by
     # default; callers can still opt out per request.
@@ -116,6 +117,7 @@ def get_config(db_path: Path | None = None) -> AVConfig:
         "vision_model",
         "embed_model",
         "chat_model",
+        "chat_max_output_tokens",
         "typesafe_api_key",
         "typesafe_endpoint",
         "typesafe_model",
@@ -191,4 +193,5 @@ def get_openai_config(config: AVConfig) -> AVConfig | None:
         embed_model="text-embedding-3-small",
         vision_model=config.vision_model,
         chat_model=config.chat_model,
+        chat_max_output_tokens=config.chat_max_output_tokens,
     )

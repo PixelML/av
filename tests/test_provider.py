@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from av.core.config import AVConfig
-from av.providers.openai import OpenAICaptioner, _client, _resolve_api_key
+from av.providers.openai import OpenAICaptioner, OpenAILLM, _client, _resolve_api_key
 
 
 def test_client_default_no_extra_headers() -> None:
@@ -69,6 +69,20 @@ def test_client_disables_sdk_retries_and_uses_configured_timeout() -> None:
     client = _client(config)
     assert client.max_retries == 0
     assert client.timeout == 17.0
+
+
+def test_llm_request_uses_configured_output_token_cap() -> None:
+    response = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(content="answer"))],
+        usage=SimpleNamespace(prompt_tokens=4, completion_tokens=2),
+    )
+    fake_client = MagicMock()
+    fake_client.chat.completions.create.return_value = response
+    config = AVConfig(api_key="explicit", chat_max_output_tokens=321)
+    with patch("av.providers.openai._client", return_value=fake_client):
+        completion = OpenAILLM(config).complete_with_usage("question", "context")
+    assert completion.text == "answer"
+    assert fake_client.chat.completions.create.call_args.kwargs["max_tokens"] == 321
 
 
 def test_caption_fallback_is_disabled_by_default(tmp_path: Path) -> None:

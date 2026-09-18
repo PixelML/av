@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
+from av.cli.config_cmd import config_show
 from av.core.config import AVConfig, _load_config_file, get_config, get_openai_config, save_config
 from av.core.constants import CONFIG_FILE_PATH, PROVIDER_PRESETS
 
@@ -99,6 +100,29 @@ def test_env_var_overrides_config_file(tmp_path: Path, monkeypatch: pytest.Monke
     assert config.chat_model == "my-custom-model"
     # Config file value still applies for non-overridden fields
     assert config.provider == "anthropic"
+
+
+def test_chat_output_cap_loads_from_config_and_env_with_positive_validation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cfg_file = tmp_path / "config.json"
+    cfg_file.write_text(json.dumps({"chat_max_output_tokens": 700}))
+    monkeypatch.setattr("av.core.config.CONFIG_FILE_PATH", cfg_file)
+    monkeypatch.delenv("AV_CHAT_MAX_OUTPUT_TOKENS", raising=False)
+    assert get_config().chat_max_output_tokens == 700
+
+    monkeypatch.setenv("AV_CHAT_MAX_OUTPUT_TOKENS", "900")
+    assert get_config().chat_max_output_tokens == 900
+
+    with pytest.raises(ValueError):
+        AVConfig(chat_max_output_tokens=0)
+
+
+def test_config_show_includes_chat_output_cap() -> None:
+    with patch("av.cli.config_cmd.get_config", return_value=AVConfig(chat_max_output_tokens=777)), \
+         patch("av.cli.config_cmd.output_json") as output:
+        config_show()
+    assert output.call_args.args[0]["chat_max_output_tokens"] == 777
 
 
 def test_openai_fallback_does_not_read_oauth_unless_enabled() -> None:

@@ -493,13 +493,16 @@ def _expand_scene(
         after=context_events,
     )
     events, hit_index = _ordered_contiguous_events(result, artifacts)
+    containing_event = events[hit_index]
+    scene.start_sec = min(scene.start_sec, containing_event["start"])
+    scene.end_sec = max(scene.end_sec, containing_event["end"])
     if len(events) < 2:
         return scene
     start, end, confidence, _, _, _ = _judge_bounds(
         client, query, events, hit_index, context_events, usage
     )
-    scene.start_sec = min(start, scene.chunk_start_sec)
-    scene.end_sec = max(end, scene.chunk_end_sec)
+    scene.start_sec = min(start, scene.start_sec)
+    scene.end_sec = max(end, scene.end_sec)
     scene.scene_confidence = confidence
     return scene
 

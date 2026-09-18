@@ -196,6 +196,7 @@ When a capability is unavailable (e.g. Anthropic has no Whisper), the pipeline s
 | `AV_VISION_MODEL` | `gpt-4-1` | Vision/caption model |
 | `AV_EMBED_MODEL` | `text-embedding-3-small` | Embedding model |
 | `AV_CHAT_MODEL` | `gpt-4-1` | Chat/RAG model |
+| `AV_CHAT_MAX_OUTPUT_TOKENS` | `1024` | Positive output-token cap for each answer response |
 | `AV_DB_PATH` | `~/.config/av/av.db` | Database location |
 | `AV_TYPESAFE_API_KEY` | (none) | Jev/System One key; enables ask refinement by default |
 | `AV_TYPESAFE_ENDPOINT` | `https://api.typesafe.ai/v1/systemone` | Explicit System One endpoint |

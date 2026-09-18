@@ -65,6 +65,7 @@ def config_show() -> None:
         "vision_model": config.vision_model,
         "embed_model": config.embed_model or "(disabled)",
         "chat_model": config.chat_model,
+        "chat_max_output_tokens": config.chat_max_output_tokens,
         "typesafe_api_key": "***" if config.typesafe_api_key else "(not set)",
         "typesafe_endpoint": config.typesafe_endpoint,
         "typesafe_model": config.typesafe_model,

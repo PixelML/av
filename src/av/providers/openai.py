@@ -392,6 +392,7 @@ class OpenAILLM(LLMProvider):
                             "content": f"Context from video analysis:\n\n{context}\n\nQuestion: {prompt}",
                         },
                     ],
+                    max_tokens=self.config.chat_max_output_tokens,
                 ),
             )
             usage = getattr(response, "usage", None)

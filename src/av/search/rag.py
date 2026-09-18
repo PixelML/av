@@ -61,18 +61,75 @@ def _heuristic_confidence(results: list[dict]) -> float:
     return min(round(float(top_score), 2), 1.0) if top_score else 0.5
 
 
-def _legacy_ask(question: str, results: list[dict], config: AVConfig) -> dict:
+def _ask_settings(config: AVConfig) -> dict:
+    return {
+        "chat_model": config.chat_model,
+        "chat_max_output_tokens": config.chat_max_output_tokens,
+    }
+
+
+def _llm_usage_snapshot(llm: OpenAILLM | None) -> dict:
+    usage = getattr(llm, "usage", None)
+    snapshot = getattr(usage, "snapshot", None)
+    if callable(snapshot):
+        receipt = snapshot()
+        if isinstance(receipt, dict):
+            return receipt
+    return new_usage()
+
+
+def _legacy_ask(
+    question: str,
+    results: list[dict],
+    config: AVConfig,
+    embedding_usage: dict | None,
+) -> dict:
+    warnings: list[str] = []
+    stage_usage = {
+        "embedding": embedding_usage,
+        "answer": new_usage(),
+    }
     if not results:
         return {
             "answer": "No relevant content found in the indexed videos.",
             "citations": [],
             "confidence": 0.0,
+            "confidence_basis": "no_evidence",
+            "route": "legacy_no_results",
+            "evidence_status": "no_retrieval_hits",
+            "warnings": warnings,
+            "stage_usage": stage_usage,
+            "ask_settings": _ask_settings(config),
         }
-    answer = OpenAILLM(config).complete(question, _context(results))
+    llm: OpenAILLM | None = None
+    try:
+        llm = OpenAILLM(config)
+        completion = llm.complete_with_usage(question, _context(results))
+        stage_usage["answer"] = _usage_from_completion(completion)
+    except Exception:
+        stage_usage["answer"] = _llm_usage_snapshot(llm)
+        warnings.append("Answer generation was unavailable; no answer was produced.")
+        return {
+            "answer": "Answer generation was unavailable. Retrieved video moments are included as citations.",
+            "citations": _citations(results),
+            "confidence": 0.0,
+            "confidence_basis": "unknown",
+            "route": "legacy_answer_failed",
+            "evidence_status": "answer_unavailable",
+            "warnings": warnings,
+            "stage_usage": stage_usage,
+            "ask_settings": _ask_settings(config),
+        }
     return {
-        "answer": answer,
+        "answer": completion.text,
         "citations": _citations(results),
         "confidence": _heuristic_confidence(results),
+        "confidence_basis": "retrieval_heuristic",
+        "route": "legacy",
+        "evidence_status": "raw_unjudged",
+        "warnings": warnings,
+        "stage_usage": stage_usage,
+        "ask_settings": _ask_settings(config),
     }
 
 
@@ -111,7 +168,12 @@ def ask(
 
     raw_results = search_result.get("results", [])
     if not refine or not config.refine_enabled or not config.typesafe_api_key:
-        return _legacy_ask(question, raw_results, config)
+        return _legacy_ask(
+            question,
+            raw_results,
+            config,
+            search_result.get("embedding_usage"),
+        )
 
     warnings: list[str] = []
     stage_usage: dict[str, dict | None] = {
@@ -134,6 +196,7 @@ def ask(
             "warnings": warnings,
             "inspected_windows": [],
             "stage_usage": stage_usage,
+            "ask_settings": _ask_settings(config),
         }
 
     client = SystemOneClient(config)
@@ -146,8 +209,27 @@ def ask(
         for stage, usage in exc.stage_usage.items():
             stage_usage[stage] = usage
         warnings.append("Jev refinement was unavailable; answering from raw retrieval without judged evidence confidence.")
-        completion = OpenAILLM(config).complete_with_usage(question, _context(raw_results))
-        stage_usage["answer"] = _usage_from_completion(completion)
+        llm: OpenAILLM | None = None
+        try:
+            llm = OpenAILLM(config)
+            completion = llm.complete_with_usage(question, _context(raw_results))
+            stage_usage["answer"] = _usage_from_completion(completion)
+        except Exception:
+            stage_usage["answer"] = _llm_usage_snapshot(llm)
+            warnings.append("Answer generation was unavailable; no answer was produced.")
+            return {
+                "answer": "Answer generation was unavailable. Retrieved video moments are included as citations.",
+                "citations": _citations(raw_results),
+                "confidence": 0.0,
+                "confidence_basis": "unknown",
+                "route": "refinement_fallback_answer_failed",
+                "evidence_status": "answer_unavailable",
+                "refinement": {"status": "provider_fallback", "raw_count": len(raw_results)},
+                "warnings": warnings,
+                "inspected_windows": [],
+                "stage_usage": stage_usage,
+                "ask_settings": _ask_settings(config),
+            }
         return {
             "answer": completion.text,
             "citations": _citations(raw_results),
@@ -159,6 +241,7 @@ def ask(
             "warnings": warnings,
             "inspected_windows": [],
             "stage_usage": stage_usage,
+            "ask_settings": _ask_settings(config),
         }
 
     if not results:
@@ -173,10 +256,30 @@ def ask(
             "warnings": warnings,
             "inspected_windows": [],
             "stage_usage": stage_usage,
+            "ask_settings": _ask_settings(config),
         }
 
-    completion = OpenAILLM(config).complete_with_usage(question, _context(results))
-    stage_usage["answer"] = _usage_from_completion(completion)
+    llm = None
+    try:
+        llm = OpenAILLM(config)
+        completion = llm.complete_with_usage(question, _context(results))
+        stage_usage["answer"] = _usage_from_completion(completion)
+    except Exception:
+        stage_usage["answer"] = _llm_usage_snapshot(llm)
+        warnings.append("Answer generation was unavailable; no answer was produced.")
+        return {
+            "answer": "Answer generation was unavailable. Relevant video moments are included as citations.",
+            "citations": _citations(results),
+            "confidence": 0.0,
+            "confidence_basis": "unknown",
+            "route": "refined_answer_failed",
+            "evidence_status": "answer_unavailable",
+            "refinement": refinement,
+            "warnings": warnings,
+            "inspected_windows": [],
+            "stage_usage": stage_usage,
+            "ask_settings": _ask_settings(config),
+        }
     answer = completion.text
     citations = _citations(results)
     support_probability: float | None = None
@@ -202,6 +305,7 @@ def ask(
             "warnings": warnings,
             "inspected_windows": [],
             "stage_usage": stage_usage,
+            "ask_settings": _ask_settings(config),
         }
 
     inspection = inspect_with_stronger_vision(question, answer, results, repo, config)
@@ -244,6 +348,7 @@ def ask(
                 "warnings": warnings,
                 "inspected_windows": inspection["windows"],
                 "stage_usage": stage_usage,
+                "ask_settings": _ask_settings(config),
             }
 
     if support_failed:
@@ -263,4 +368,5 @@ def ask(
         "warnings": warnings,
         "inspected_windows": inspection["windows"],
         "stage_usage": stage_usage,
+        "ask_settings": _ask_settings(config),
     }

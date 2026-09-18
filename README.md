@@ -307,6 +307,7 @@ export AV_TRANSCRIBE_MODEL="whisper"
 export AV_VISION_MODEL="gpt-4-1"
 export AV_EMBED_MODEL="text-embedding-3-small"
 export AV_CHAT_MODEL="gpt-4-1"
+export AV_CHAT_MAX_OUTPUT_TOKENS="1024"  # positive cap for each answer response
 
 # Optional Jev/System One refinement (automatic when a key is present)
 export AV_TYPESAFE_API_KEY="..."  # TYPESAFE_API_KEY also works
@@ -338,6 +339,7 @@ API requests use the configured timeout and explicit retry limit. Ingestion JSON
 includes `stage_usage` for transcription, captioning, caption summarization, and
 embeddings, plus the effective frame/request settings. Request failures are counted;
 token totals become `null` with a completeness flag when any provider omits usage.
+Ask JSON likewise reports the effective chat model/output cap and per-stage usage.
 No dollar total is inferred.
 
 ## Requirements
