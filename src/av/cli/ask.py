@@ -26,7 +26,14 @@ def register(app: typer.Typer) -> None:
             help="Skip configured Jev relevance and scene refinement",
         ),
     ) -> None:
-        """Ask a question about indexed video content (RAG)."""
+        """Ask a question about indexed video content (RAG).
+
+        When configured, Jev filters source relevance, bounds scene context, and
+        checks answer support. Optional stronger selected-frame inspection runs
+        only with explicit AV_STRONG_VISION_API_BASE_URL and
+        AV_STRONG_VISION_MODEL settings; AV_STRONG_VISION_API_KEY is used when
+        the endpoint requires authentication.
+        """
         config = get_config(db_path=Path(db) if db else None)
         repo = Repository(config.db_path)
 

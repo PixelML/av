@@ -27,6 +27,15 @@ from av.utils.hashing import file_hash
 from av.utils.principles import load_principles
 
 
+def _dense_caption_template_path() -> Path:
+    current = Path(__file__).resolve()
+    candidates = (
+        current.parents[1] / "prompts" / "dense_caption.md",
+        current.parents[3] / "prompts" / "dense_caption.md",
+    )
+    return next((candidate for candidate in candidates if candidate.is_file()), candidates[-1])
+
+
 def _chunk_seconds_for_audio(audio_path: Path, target_bytes: int = MAX_AUDIO_CHUNK_BYTES - (1 * 1024 * 1024)) -> int:
     size = audio_path.stat().st_size
     if size <= 0:
@@ -387,7 +396,7 @@ def ingest_video(
                     )
 
                 principles = load_principles(principles_path)
-                template_path = Path(__file__).resolve().parents[3] / "prompts" / "dense_caption.md"
+                template_path = _dense_caption_template_path()
                 prompt = render_dense_prompt(template_path, principles)
 
                 if frames:
