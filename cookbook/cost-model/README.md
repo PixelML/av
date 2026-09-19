@@ -24,19 +24,21 @@ The evidence is partial:
 | Grok caption smoke | completed | $0.0006359 |
 | Grok caption ingestion | aborted after 4 responses; 0 captions persisted | $0.0070886 |
 | Gemini 3.8 native-video baseline | completed | $0.308076 |
-| 32-token caption cap probe | HTTP 502/no route; usage unknown | unknown |
+| 32-token caption cap probe through the first configured route | HTTP 502/no route; usage unknown |
+| Direct 32-token caption cap probe | exact model returned 309 completion tokens against requested cap 32 | $0.0020309 |
 
-Known token-derived list-rate estimates total **$0.3913266**. They are not billed
+Known token-derived list-rate estimates total **$0.3933575**. They are not billed
 dollars. Provider/account or proxy billing remains unknown. Compute, storage, and
 network allocation also remains unknown.
 
 The cumulative experiment cap is **$5**. The reservation ledger records
-**$3.98945825** of request ceilings: **$2.501** for the caption smoke and
-**$0.37845825** for the native-video baseline were released after metering, while
-**$0.90** caption ingestion, **$0.20** query/judge/answer, and **$0.01** cap probe
-remain retained. Only the retained **$1.11** counts against current headroom.
-Known estimates plus retained reservations are **$1.5013266**, leaving
-**$3.4986734** of estimate headroom.
+**$3.97945825** of request ceilings: **$2.501** for the caption smoke and
+**$0.37845825** for the native-video baseline were released after metering.
+The **$0.01** first-route cap-probe ceiling was closed after a second direct
+probe measured **$0.0020309**, leaving **$0.90** caption ingestion and
+**$0.20** query/judge/answer retained. Only the retained **$1.10** counts against
+current headroom. Known estimates plus retained reservations are **$1.4933575**,
+leaving **$3.5066425** of estimate headroom.
 
 **No completed AV Grok+Jev comparison exists yet.** The receipts do not establish
 speed, cost, or quality parity with the Gemini 3.8 baseline. The baseline used

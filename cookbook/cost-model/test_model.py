@@ -100,15 +100,15 @@ class CostAccountingTests(unittest.TestCase):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
         report = experiment_report(data)
         self.assertEqual(report["list_rate_estimates"]["known_subtotal_usd"],
-                         Decimal("0.3913266"))
-        self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("3.98945825"))
-        self.assertEqual(report["reservations"]["total_retained_usd"], Decimal("1.11"))
+                         Decimal("0.3933575"))
+        self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("3.97945825"))
+        self.assertEqual(report["reservations"]["total_retained_usd"], Decimal("1.10"))
         self.assertEqual(
             report["reservations"]["status_totals_usd"]["released_after_metering"],
             Decimal("2.87945825"),
         )
-        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("1.5013266"))
-        self.assertEqual(report["remaining_cap_usd"], Decimal("3.4986734"))
+        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("1.4933575"))
+        self.assertEqual(report["remaining_cap_usd"], Decimal("3.5066425"))
         self.assertIsNone(report["unknown_costs"]["complete_total_usd"])
         self.assertEqual(
             [item["outcome"] for item in report["failures"]],
@@ -123,6 +123,7 @@ class CostAccountingTests(unittest.TestCase):
             "caption-aborted.json",
             "caption-smoke.json",
             "cap-probe-32-incompatible.json",
+            "cap-probe-32-direct-incompatible.json",
         }
         self.assertTrue(required.issubset({path.name for path in RECEIPTS.glob("*.json")}))
         receipt = json.loads((RECEIPTS / "gemini38-baseline.json").read_text())
@@ -196,7 +197,7 @@ class CostAccountingTests(unittest.TestCase):
 
     def test_cap_rejects_estimates_plus_reservations_above_limit(self):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
-        data["cumulative_cap_usd"] = "1.50"
+        data["cumulative_cap_usd"] = "1.4933574"
         with self.assertRaisesRegex(ValueError, "exceed cumulative cap"):
             experiment_report(data)
 

@@ -4,7 +4,7 @@
     "status": "partial_reproduction",
     "implementation": "av",
     "receipt_directory": "../receipts",
-    "note": "Completed ASR and direct-video baseline receipts exist, but no completed AV Grok+Jev comparison exists yet.",
+    "note": "Completed ASR and direct-video baseline receipts exist, and the direct 32-token compatibility probe completed with usage, but the exact model ignored the requested output cap. No completed AV Grok+Jev comparison exists yet.",
     "projection": "Repeated-query totals are projections from entered stage costs, not additional measured runs."
   },
   "indexing": [
@@ -148,6 +148,17 @@
       "cached_tokens": null,
       "outcome": "completed",
       "receipt": "../receipts/gemini38-baseline.json"
+    },
+    {
+      "name": "direct_max_completion_tokens_cap_probe",
+      "requests": 1,
+      "input_tokens": 1168,
+      "output_tokens": 309,
+      "thinking_tokens": 0,
+      "cached_tokens": 192,
+      "outcome": "incompatible",
+      "receipt": "../receipts/cap-probe-32-direct-incompatible.json",
+      "note": "Exact model returned usage but ignored requested max_completion_tokens=32."
     }
   ],
   "experiment_spend": [
@@ -200,6 +211,16 @@
       "receipt": "../receipts/gemini38-baseline.json",
       "usage_ref": "gemini38_native_video_baseline",
       "note": "Full-rate upstream list estimate from measured input, output, and thinking tokens; not billed dollars."
+    },
+    {
+      "name": "direct_max_completion_tokens_cap_probe",
+      "usd": "0.0020309",
+      "basis": "estimated",
+      "category": "compatibility_probe",
+      "outcome": "incompatible",
+      "receipt": "../receipts/cap-probe-32-direct-incompatible.json",
+      "usage_ref": "direct_max_completion_tokens_cap_probe",
+      "note": "Cache-aware upstream list-rate estimate; the model returned 309 completion tokens despite requested cap 32."
     }
   ],
   "unknown_costs": [
@@ -209,15 +230,6 @@
       "basis": "unknown",
       "category": "billing",
       "note": "Account and proxy billed dollars were not available; list-rate estimates are not invoices."
-    },
-    {
-      "name": "cap_probe_dispatch",
-      "usd": null,
-      "basis": "unknown",
-      "category": "failed_attempt",
-      "outcome": "incompatible",
-      "receipt": "../receipts/cap-probe-32-incompatible.json",
-      "note": "The 32-token probe returned HTTP 502/no route with no usage; paid upstream dispatch is unverified."
     },
     {
       "name": "compute_storage_network",
@@ -255,13 +267,6 @@
       "usd": "0.20",
       "status": "retained",
       "note": "Conservative reservation, not spend."
-    },
-    {
-      "name": "max_completion_tokens_cap_probe",
-      "usd": "0.01",
-      "status": "retained",
-      "receipt": "../receipts/cap-probe-32-incompatible.json",
-      "note": "Retained because usage and upstream dispatch were unknown."
     }
   ],
   "cumulative_cap_usd": "5"
