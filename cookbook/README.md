@@ -13,11 +13,10 @@ remains available at its existing URL. Its Composer demonstrations are historica
 context, not measurements of this CLI. New AV reproduction results belong in
 this cookbook with their own media, model, configuration, and cost provenance.
 
-The current evidence includes a completed Gemini 3.8 direct-video baseline. The
-restored Grok route returned the exact requested model and usage, but returned
-260 completion tokens against `max_completion_tokens=32`. A later explicitly
-authorized fresh attempt imported the completed transcript, then stopped on a
-local media-probe timeout before frame extraction: 0 captions and 0 provider
-requests. There is **no completed AV Grok+Jev
-comparison yet**; do not infer speed, cost, or quality parity from component
-receipts.
+The current evidence includes a completed Gemini 3.8 direct-video baseline and a
+completed AV Grok-only path: 300/300 caption requests, 75 transcript windows, and
+one correct answer with transcript citation. The selected route ignored output
+caps in both 32-token probes, and six of the 300 caption responses exceeded the
+requested 200-token advisory cap. No Jev request ran because the required
+credential was absent, so there is **no completed AV Grok+Jev comparison**. Do
+not infer all-in speed, cost, or quality parity from component receipts.

@@ -100,23 +100,23 @@ class CostAccountingTests(unittest.TestCase):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
         report = experiment_report(data)
         self.assertEqual(report["list_rate_estimates"]["known_subtotal_usd"],
-                         Decimal("0.3942579"))
-        self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("4.89945825"))
+                         Decimal("0.9006585"))
+        self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("5.99945825"))
         self.assertEqual(report["reservations"]["total_retained_usd"], Decimal("0"))
         self.assertEqual(
             report["reservations"]["status_totals_usd"]["released_after_metering"],
-            Decimal("2.89945825"),
+            Decimal("3.99945825"),
         )
         self.assertEqual(report["reservations"]["status_totals_usd"]["superseded"], Decimal("2.00"))
-        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("0.3942579"))
-        self.assertEqual(report["remaining_cap_usd"], Decimal("4.6057421"))
+        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("0.9006585"))
+        self.assertEqual(report["remaining_cap_usd"], Decimal("4.0993415"))
         self.assertIsNone(report["unknown_costs"]["complete_total_usd"])
         self.assertEqual(
             [item["outcome"] for item in report["failures"]],
             ["failed", "aborted", "incompatible", "incompatible"],
         )
         self.assertEqual(report["measured_usage"][0]["input_tokens"], 118228)
-        self.assertEqual(report["measured_usage"][-1]["outcome"], "blocked_before_provider_request")
+        self.assertEqual(report["measured_usage"][-1]["outcome"], "blocked_before_request")
         self.assertEqual(report["measured_usage"][-1]["requests"], 0)
 
     def test_sanitized_receipts_are_present_and_baseline_estimate_recomputes(self):
@@ -129,6 +129,9 @@ class CostAccountingTests(unittest.TestCase):
             "cap-probe-32-direct-incompatible.json",
             "cap-probe-32-restored-incompatible.json",
             "live-ingestion-local-probe-timeout.json",
+            "grok-live-ingestion.json",
+            "grok-legacy-query.json",
+            "jev-credential-blocked.json",
         }
         self.assertTrue(required.issubset({path.name for path in RECEIPTS.glob("*.json")}))
         receipt = json.loads((RECEIPTS / "gemini38-baseline.json").read_text())
@@ -156,6 +159,8 @@ class CostAccountingTests(unittest.TestCase):
         expected = {
             ("../receipts/caption-smoke.json", "reserved_upstream_list_usd"),
             ("../receipts/gemini38-baseline.json", "cost.worst_case_reserved_list_estimate_usd"),
+            ("../receipts/grok-live-ingestion.json", "reservation.reserved_usd"),
+            ("../receipts/grok-legacy-query.json", "reservation.reserved_usd"),
         }
         for key in expected:
             with self.subTest(receipt=key[0], field=key[1]):
@@ -202,7 +207,7 @@ class CostAccountingTests(unittest.TestCase):
 
     def test_cap_rejects_estimates_plus_reservations_above_limit(self):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
-        data["cumulative_cap_usd"] = "0.3942578"
+        data["cumulative_cap_usd"] = "0.9006584"
         with self.assertRaisesRegex(ValueError, "exceed cumulative cap"):
             experiment_report(data)
 
