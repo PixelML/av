@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "stage": "grok_dense_ingestion",
+  "status": "complete",
+  "runtime_commit": "dd9dfa2f3dd1d801589569b2872f21c2fa268d8c",
+  "model_requested": "grok-4.20-0309-non-reasoning",
+  "model_returned": [
+    "grok-4.20-0309-non-reasoning"
+  ],
+  "settings": {
+    "sample_frames": 300,
+    "fps_sample": 0.06666666666666667,
+    "frame_dimensions": [
+      1280,
+      720
+    ],
+    "jpeg_quality": 2,
+    "embeddings": false,
+    "transcript_windows": 75,
+    "automatic_retries": 0,
+    "hidden_fallbacks": false,
+    "requested_caption_cap": 200,
+    "completion_cap_advisory": true,
+    "preextracted_exact_frames": true
+  },
+  "wall_seconds": 902.9050934410043,
+  "request_attempts": 300,
+  "successful_provider_responses": 300,
+  "usage": {
+    "prompt_tokens": 375300,
+    "completion_tokens": 38483,
+    "cached_prompt_tokens": 57600,
+    "reasoning_tokens": 0
+  },
+  "completion_tokens": {
+    "minimum": 45,
+    "maximum": 235,
+    "over_requested_cap": 6
+  },
+  "cache_aware_list_estimate_usd": "0.5048525",
+  "artifacts_persisted": {
+    "transcript": 75,
+    "dense_caption": 300
+  },
+  "usage_complete": true,
+  "proxy_billed_usd": null,
+  "basis": "estimated from measured usage and published upstream list rates",
+  "reservation": {
+    "name": "grok_dense_ingestion",
+    "reserved_usd": "0.90",
+    "status": "released_after_metering"
+  },
+  "limitations": {
+    "six_responses_exceeded_requested_200_token_advisory_cap": true,
+    "maximum_completion_tokens": 235,
+    "proxy_billed_usd_unknown": true,
+    "infrastructure_storage_network_unpriced": true
+  },
+  "wall_seconds_scope": "Measured AV ingestion run using already extracted frames and an existing transcript sidecar; excludes prior frame extraction and external ASR. Not end-to-end ingestion latency."
+}

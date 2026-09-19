@@ -1,0 +1,106 @@
+{
+  "stage": "aborted_caption_ingest",
+  "model_requested": "grok-4.20-0309-non-reasoning",
+  "model_returned": ["grok-4.20-0309-non-reasoning"],
+  "runtime_head": "75125c3104278dd137e4960927e0afb047c81f90",
+  "requests": 4,
+  "input_tokens": 5004,
+  "output_tokens": 656,
+  "cached_tokens": 768,
+  "wall_seconds": 14.9669291709979,
+  "usage_complete": true,
+  "cache_aware_usd_estimate": 0.0070886000000000005,
+  "miss_only_usd_estimate": 0.007895,
+  "basis": "estimated",
+  "proxy_billed_usd": null,
+  "stop_reason": "Observed completion_tokens 230 exceeds requested deprecated max_tokens=200; meter guard stopped before request5",
+  "settings": {
+    "max_frames": 300,
+    "frame_resolution": [1280, 720],
+    "requested_output_cap": 200,
+    "retries": 0,
+    "fps": 0.06666666666666667
+  },
+  "frames_completed": 4,
+  "frame_captions_persisted": 0,
+  "per_request_receipts": [
+    {
+      "request": 1,
+      "status": "response",
+      "model_returned": "grok-4.20-0309-non-reasoning",
+      "wall_seconds": 3.9929721240005165,
+      "usage": {
+        "completion_tokens": 150,
+        "prompt_tokens": 1251,
+        "total_tokens": 1401,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": {"audio_tokens": null, "cached_tokens": 192}
+      },
+      "choices": [{"finish_reason": "stop", "content_nonempty": true, "content_chars": 754}]
+    },
+    {
+      "request": 2,
+      "status": "response",
+      "model_returned": "grok-4.20-0309-non-reasoning",
+      "wall_seconds": 3.2215615309978602,
+      "usage": {
+        "completion_tokens": 142,
+        "prompt_tokens": 1251,
+        "total_tokens": 1393,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": {"audio_tokens": null, "cached_tokens": 192}
+      },
+      "choices": [{"finish_reason": "stop", "content_nonempty": true, "content_chars": 682}]
+    },
+    {
+      "request": 3,
+      "status": "response",
+      "model_returned": "grok-4.20-0309-non-reasoning",
+      "wall_seconds": 3.1171810109990474,
+      "usage": {
+        "completion_tokens": 134,
+        "prompt_tokens": 1251,
+        "total_tokens": 1385,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": {"audio_tokens": null, "cached_tokens": 192}
+      },
+      "choices": [{"finish_reason": "stop", "content_nonempty": true, "content_chars": 649}]
+    },
+    {
+      "request": 4,
+      "status": "response",
+      "model_returned": "grok-4.20-0309-non-reasoning",
+      "wall_seconds": 4.6352145050004765,
+      "usage": {
+        "completion_tokens": 230,
+        "prompt_tokens": 1251,
+        "total_tokens": 1481,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": null,
+          "audio_tokens": null,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": null
+        },
+        "prompt_tokens_details": {"audio_tokens": null, "cached_tokens": 192}
+      },
+      "choices": [{"finish_reason": "stop", "content_nonempty": true, "content_chars": 1129}]
+    }
+  ],
+  "rates_source": "https://docs.x.ai/developers/models/grok-4.20-0309-non-reasoning.md",
+  "rates_as_of": "2026-09-18"
+}

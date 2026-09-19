@@ -111,6 +111,7 @@ av ingest /folder/                      # batch directory
 av ingest video.mp4 --force             # re-ingest
 av ingest "https://youtu.be/..."        # YouTube URL
 av ingest video.mp4 --dense-vision      # structured dense captions
+av ingest video.mp4 --transcript-json transcript.json  # validated external transcript; skips built-in ASR
 ```
 ```json
 {"status": "complete", "video_id": "uuid", "filename": "video.mp4", "duration_sec": 120.5, "artifacts_count": 42, "elapsed_sec": 15.3}
@@ -126,6 +127,12 @@ On partial failure: `{"status": "complete_with_warnings", ..., "warnings": ["Tra
 ```json
 {"answer": "...", "citations": [{"video_id": "uuid", "start_sec": 120.0, "source_type": "transcript", "text": "...", "score": 0.91}], "confidence": 0.85}
 ```
+
+With `AV_TYPESAFE_API_KEY` (or `TYPESAFE_API_KEY`) configured, `av ask`
+automatically runs Jev source relevance, configurable bounded scene grouping, answer
+synthesis, and a separate answer-support Noul. `--no-refine` preserves legacy RAG
+for one request. Refined responses retain answer/citations/confidence and add route,
+evidence, refinement, warning, inspected-window, and stage-usage metadata.
 
 ### `av list` / `av info <id>` / `av transcript <id>` / `av export` / `av open <id>`
 See `av <command> --help` for details.
@@ -180,12 +187,28 @@ When a capability is unavailable (e.g. Anthropic has no Whisper), the pipeline s
 |----------|---------|-------------|
 | `AV_API_KEY` | (none) | API key (overrides config.json) |
 | `AV_API_BASE_URL` | `https://api.openai.com/v1` | API endpoint |
+| `AV_API_TIMEOUT_SEC` | `120` | Per-attempt API timeout |
+| `AV_API_MAX_RETRIES` | `1` | Explicit retry count; SDK retries stay disabled |
+| `AV_ALLOW_OAUTH_FALLBACK` | `false` | Allow reading local OAuth caches only when explicitly enabled |
+| `AV_ALLOW_CODEX_FALLBACK` | `false` | Allow spawning Codex for caption fallback only when explicitly enabled |
 | `AV_PROVIDER` | (none) | Provider name |
 | `AV_TRANSCRIBE_MODEL` | `whisper-1` | Transcription model |
 | `AV_VISION_MODEL` | `gpt-4-1` | Vision/caption model |
 | `AV_EMBED_MODEL` | `text-embedding-3-small` | Embedding model |
 | `AV_CHAT_MODEL` | `gpt-4-1` | Chat/RAG model |
+| `AV_CHAT_MAX_OUTPUT_TOKENS` | `1024` | Positive output-token cap for each answer response |
 | `AV_DB_PATH` | `~/.config/av/av.db` | Database location |
+| `AV_TYPESAFE_API_KEY` | (none) | Jev/System One key; enables ask refinement by default |
+| `AV_TYPESAFE_ENDPOINT` | `https://api.typesafe.ai/v1/systemone` | Explicit System One endpoint |
+| `AV_TYPESAFE_MODEL` | `jev-latest` | System One model |
+| `AV_REFINE_RELEVANCE_MIN` | `0.5` | Minimum source-relevance Noul probability |
+| `AV_REFINE_SUPPORT_MIN` | `0.5` | Minimum answer-support Noul probability |
+| `AV_REFINE_MAX_SCENES` | `8` | Maximum merged scenes sent to synthesis |
+| `AV_REFINE_BATCH_SIZE` | `10` | Sources per System One relevance request |
+| `AV_REFINE_CONTEXT_EVENTS` | `3` | Maximum temporal events on each side of a hit |
+| `AV_STRONG_VISION_API_BASE_URL` | (none) | Explicit OpenAI-compatible sampled-frame endpoint |
+| `AV_STRONG_VISION_API_KEY` | (none) | Key for the stronger sampled-frame endpoint |
+| `AV_STRONG_VISION_MODEL` | (none) | Explicit stronger vision model; never selected implicitly |
 | `DEEPSEEK_API_KEY` | (none) | Key for a self-hosted DeepSeek-V4.1-Flash server |
 | `SGLANG_API_KEY` | (none) | Alias for the same, matching SGLang's own naming |
 

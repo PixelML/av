@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "experiment": {
+    "status": "pending",
+    "implementation": "av",
+    "receipt": null,
+    "note": "Input template, not a benchmark result. Fill with a sanitized live AV receipt before making a claim.",
+    "projection": "Each query uses the entered average stage costs. Repeated-query totals are projections, not measured runs."
+  },
+  "indexing": [
+    {
+      "name": "caption",
+      "usd": null,
+      "basis": "unknown",
+      "note": "AV caption model usage and applicable provider price pending."
+    },
+    {
+      "name": "external_asr",
+      "usd": null,
+      "basis": "unknown",
+      "note": "External ASR usage is separate from AV sidecar import; pending."
+    },
+    {
+      "name": "embedding",
+      "usd": null,
+      "basis": "unknown",
+      "note": "Record model usage or explicit not_used if embeddings are disabled."
+    },
+    {
+      "name": "preprocessing",
+      "usd": null,
+      "basis": "unknown",
+      "note": "One-time media preparation compute and network allocation is unmetered."
+    }
+  ],
+  "query": {
+    "retrieval": {
+      "usd": null,
+      "basis": "unknown",
+      "note": "Query embedding, retrieval compute, and network cost not metered."
+    },
+    "judge": {
+      "usd": null,
+      "basis": "unknown",
+      "note": "Sum source relevance, scene refinement, answer support, and retries from the AV run."
+    },
+    "answer": {
+      "usd": null,
+      "basis": "unknown",
+      "note": "Use AV answer usage and documented rate; token-derived dollars are estimates."
+    },
+    "stronger_fallback": {
+      "frequency": 0,
+      "per_invocation": {
+        "usd": 0,
+        "basis": "not_used",
+        "note": "Disabled for the pending basic reproduction; set frequency and cost if enabled."
+      }
+    }
+  },
+  "period": {
+    "label": "same period as entered query volume",
+    "hosting": {
+      "usd": null,
+      "basis": "unknown",
+      "note": "Host cost allocation is unmetered."
+    },
+    "storage": {
+      "usd": null,
+      "basis": "unknown",
+      "note": "Index and media storage allocation is unmetered."
+    }
+  },
+  "baseline": {
+    "uncached_per_query": {
+      "usd": null,
+      "basis": "unknown",
+      "note": "No paired direct-video baseline run is included yet."
+    },
+    "cache": {
+      "policy": "unknown; record TTL, reuse scope, cache write/refresh count, and observation period",
+      "hit_rate": null,
+      "hit_per_query": {
+        "usd": null,
+        "basis": "unknown",
+        "note": "All-in cost of a cache-hit request, including uncached prompt and output."
+      },
+      "write_period": {
+        "usd": null,
+        "basis": "unknown",
+        "note": "Cache creation and refresh costs for the same period."
+      },
+      "storage_period": {
+        "usd": null,
+        "basis": "unknown",
+        "note": "Cache token-hours or corresponding storage cost for the same period."
+      }
+    }
+  },
+  "experiment_spend": [
+    {
+      "name": "all_incurred_costs",
+      "usd": null,
+      "basis": "unknown",
+      "note": "Pending actual run ledger: include successful requests, failed ASR attempts, preflight/trial calls, and unmetered incurred infrastructure. Keep trial costs separate from repeatable indexing inputs."
+    }
+  ],
+  "measured_usage": [],
+  "unknown_costs": [
+    {
+      "name": "provider_or_proxy_billed_total",
+      "usd": null,
+      "basis": "unknown",
+      "note": "Replace with billing evidence if available; list-rate estimates are not billed dollars."
+    },
+    {
+      "name": "compute_storage_network",
+      "usd": null,
+      "basis": "unknown",
+      "note": "Record compute, storage, and network allocation separately."
+    }
+  ],
+  "reservations": [],
+  "cumulative_cap_usd": "5"
+}

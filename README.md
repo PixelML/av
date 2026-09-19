@@ -30,6 +30,63 @@ av search "person with red bag"
 av ask "what happened at 2:30?"
 ```
 
+### Refined `av ask` (optional)
+
+Configure a TypeSafe System One key to make Jev refinement automatic for `av ask`:
+
+```bash
+export AV_TYPESAFE_API_KEY="..."       # TYPESAFE_API_KEY is also accepted
+av ask "when does the person enter the room?"
+av ask "when does the person enter the room?" --no-refine  # legacy RAG for this call
+```
+
+The refined path uses Jev only for typed decisions: it filters source relevance,
+uses a configurable bounded temporal neighborhood to form local scenes, merges
+overlapping same-video scenes, and ranks them by `relevance probability × retrieval
+score`. A separate Jev Noul checks whether the answer is supported; source relevance
+is not treated as answer correctness.
+
+If Jev is unavailable, `av ask` visibly warns and falls back to raw retrieval. If
+Jev validly rejects every hit, the result is empty instead of restoring rejected
+hits. Refined JSON includes `route`, `evidence_status`, `refinement`, `warnings`,
+`inspected_windows`, and per-stage token usage when providers report it. Unknown
+usage remains `null`.
+
+Missing, malformed, or out-of-range System One probabilities are treated as a
+refinement failure: `av` reports the fallback and does not invent a confidence.
+
+See the [AV ask refinement cookbook](cookbook/README.md) for the reproducible
+recipe, offline cost arithmetic, and sanitized receipt provenance.
+
+FTS5 remains the first retrieval stage. An unscoped query with zero FTS matches does
+not scan the video archive or invoke sampled-frame inspection.
+
+### API-only reproducible ingest
+
+Use an explicit OpenAI-compatible endpoint/key and keep both fallback flags disabled:
+
+```bash
+export AV_API_BASE_URL="https://your-provider.example/v1"
+export AV_API_KEY="..."
+export AV_VISION_MODEL="your-cheap-vision-model"
+export AV_ALLOW_OAUTH_FALLBACK="false"
+export AV_ALLOW_CODEX_FALLBACK="false"
+
+av ingest video.mp4 --dense-vision --max-frames 120 --no-embed
+```
+
+To import a timestamped transcript produced by a separate public ASR script, pass a
+validated sidecar instead of running built-in ASR:
+
+```bash
+av ingest video.mp4 --dense-vision --transcript-json transcript.json
+```
+
+The sidecar contains `segments` with `start_sec`, `end_sec`, and `text`, plus optional
+`model` and public `provenance`. It is validated against the probed video duration
+before database changes or API calls. AV records the import as local work with zero
+provider requests; external ASR usage or cost is not attributed to this ingest.
+
 ### Surveillance Detection
 
 ```bash
@@ -242,16 +299,59 @@ Env vars always override config.json:
 ```bash
 export AV_API_KEY="sk-..."
 export AV_API_BASE_URL="https://api.openai.com/v1"  # or any OpenAI-compatible endpoint
+export AV_API_TIMEOUT_SEC="120"
+export AV_API_MAX_RETRIES="1"
+export AV_API_TOKEN_LIMIT_PARAMETER="max_tokens"  # or max_completion_tokens when required
+export AV_ALLOW_OAUTH_FALLBACK="false"  # never read local auth caches unless explicitly enabled
+export AV_ALLOW_CODEX_FALLBACK="false"  # never spawn Codex unless explicitly enabled
 export AV_TRANSCRIBE_MODEL="whisper"
 export AV_VISION_MODEL="gpt-4-1"
+export AV_VISION_MAX_OUTPUT_TOKENS="200"  # single-frame caption response
+export AV_VISION_CHUNK_MAX_OUTPUT_TOKENS="500"  # multi-frame chunk caption response
 export AV_EMBED_MODEL="text-embedding-3-small"
 export AV_CHAT_MODEL="gpt-4-1"
+export AV_CHAT_MAX_OUTPUT_TOKENS="1024"  # positive cap for each answer response
+
+# Optional Jev/System One refinement (automatic when a key is present)
+export AV_TYPESAFE_API_KEY="..."  # TYPESAFE_API_KEY also works
+export AV_TYPESAFE_ENDPOINT="https://api.typesafe.ai/v1/systemone"
+export AV_TYPESAFE_MODEL="jev-latest"
+export AV_REFINE_RELEVANCE_MIN="0.5"
+export AV_REFINE_SUPPORT_MIN="0.5"
+export AV_REFINE_MAX_SCENES="8"
+export AV_REFINE_BATCH_SIZE="10"
+export AV_REFINE_CONTEXT_EVENTS="3"
+
+# Optional bounded sampled-frame fallback after an unsupported answer
+export AV_STRONG_VISION_API_BASE_URL="https://your-explicit-endpoint.example/v1"
+export AV_STRONG_VISION_API_KEY="..."
+export AV_STRONG_VISION_MODEL="your-explicit-model"
+export AV_INSPECTION_MAX_WINDOWS="2"
+export AV_INSPECTION_MAX_SECONDS="120"
+export AV_INSPECTION_MAX_FRAMES="12"
+export AV_INSPECTION_MAX_ATTEMPTS="1"
+export AV_INSPECTION_DENSE_PASS="false"
 
 # Self-hosted DeepSeek-V4.1-Flash via SGLang
 export AV_PROVIDER="deepseek"
 export AV_API_BASE_URL="http://your-sglang-host:30000/v1"
 export DEEPSEEK_API_KEY="..."   # only if your server requires one
 ```
+
+`AV_API_TOKEN_LIMIT_PARAMETER` selects the request field sent by AV's primary
+OpenAI-compatible chat provider. The two vision limits apply to its single-frame
+and multi-frame caption calls; `AV_CHAT_MAX_OUTPUT_TOKENS` applies to its ordinary
+answer and summarization calls. These settings do not configure Jev/System One,
+stronger sampled-frame inspection, `av bench`, or `av sentinel`. They also do not
+prove that an upstream provider accepts or enforces the requested cap; verify the
+returned usage and finish reason for the exact endpoint and model.
+
+API requests use the configured timeout and explicit retry limit. Ingestion JSON
+includes `stage_usage` for transcription, captioning, caption summarization, and
+embeddings, plus the effective frame/request settings. Request failures are counted;
+token totals become `null` with a completeness flag when any provider omits usage.
+Ask JSON likewise reports the effective chat model/output cap and per-stage usage.
+No dollar total is inferred.
 
 ## Requirements
 
@@ -267,7 +367,7 @@ export DEEPSEEK_API_KEY="..."   # only if your server requires one
 | `av config show` | Show current configuration |
 | `av ingest <path>` | Ingest video file(s) into the index |
 | `av search <query>` | Full-text + semantic search |
-| `av ask <question>` | RAG Q&A with citations |
+| `av ask <question>` | RAG Q&A; automatically refines with Jev when configured |
 | `av list` | List all indexed videos |
 | `av info <video_id>` | Detailed video metadata |
 | `av transcript <id>` | Output transcript (VTT/SRT/text) |

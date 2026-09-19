@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "stage": "grok_legacy_query",
+  "status": "complete_grok_only",
+  "runtime_commit": "dd9dfa2f3dd1d801589569b2872f21c2fa268d8c",
+  "question": "What percentage did manufacturing expand by in the second quarter and what drove it?",
+  "answer": "Manufacturing expanded by 12.2% in the second quarter, driven largely by AI-related demand for electronics and precision engineering.",
+  "citations": [
+    {
+      "start_sec": 1140.0,
+      "end_sec": 1200.0,
+      "source_type": "transcript"
+    }
+  ],
+  "route": "legacy",
+  "evidence_status": "raw_unjudged",
+  "jev_requests": 0,
+  "wall_seconds": 2.0740865,
+  "request_attempts": 1,
+  "successful_provider_responses": 1,
+  "model_requested": "grok-4.20-0309-non-reasoning",
+  "model_returned": "grok-4.20-0309-non-reasoning",
+  "settings": {
+    "chat_model": "grok-4.20-0309-non-reasoning",
+    "chat_max_output_tokens": 512,
+    "embeddings": false,
+    "stronger_inspection": false,
+    "automatic_retries": 0
+  },
+  "usage": {
+    "prompt_tokens": 1256,
+    "cached_prompt_tokens": 128,
+    "completion_tokens": 45,
+    "reasoning_tokens": 0
+  },
+  "cache_aware_list_estimate_usd": "0.0015481",
+  "usage_complete": true,
+  "proxy_billed_usd": null,
+  "basis": "estimated from measured usage and published upstream list rates",
+  "reservation": {
+    "name": "query_judge_and_answer",
+    "reserved_usd": "0.20",
+    "status": "released_after_metering"
+  },
+  "limitations": {
+    "jev_relevance_or_support_check_completed": false,
+    "jev_absence_reason": "No configured AV_TYPESAFE_API_KEY credential was available; Grok was not substituted for Jev.",
+    "single_question_no_aggregate_quality_claim": true,
+    "query_latency_is_not_a_complete_av_vs_gemini_comparison": true,
+    "proxy_billed_usd_unknown": true,
+    "infrastructure_storage_network_unpriced": true
+  }
+}

@@ -20,7 +20,9 @@ from av.pipeline.cascade import run_cascade
 from av.pipeline.chunker import chunk_artifacts
 from av.pipeline.dense_caption import export_dense_outputs, render_dense_prompt
 from av.pipeline.ffmpeg import extract_audio, extract_frames, get_video_info
+from av.pipeline.transcript_sidecar import load_transcript_sidecar
 from av.providers.openai import OpenAICaptioner, OpenAIEmbedder, OpenAITranscriber
+from av.providers.usage import ProviderUsage
 from av.utils.hashing import file_hash
 from av.utils.principles import load_principles
 
@@ -106,6 +108,7 @@ def ingest_video(
     dense_output_dir: Path | None = None,
     topic: str = "general",
     frame_captions: bool = False,
+    transcript_json: Path | None = None,
 ) -> dict:
     """Ingest a single video file. Returns JSON-serializable result dict."""
     start_time = time.time()
@@ -116,10 +119,22 @@ def ingest_video(
     if not path.is_file():
         raise IngestError(f"Not a file: {path}")
 
-    # Step 1: Hash + idempotency check
+    # Step 1: Hash and validate all local inputs before mutating the database.
     fhash = file_hash(path)
+    print(f"  Probing: {path.name}...", file=sys.stderr)
+    meta = get_video_info(path)
+    transcript_sidecar = (
+        load_transcript_sidecar(transcript_json, duration_sec=meta.duration_sec)
+        if transcript_json is not None
+        else None
+    )
+
     existing = repo.get_video_by_hash(fhash)
     if existing and not force:
+        if transcript_sidecar is not None:
+            raise IngestError(
+                "Video is already ingested; use --force to apply an explicit transcript sidecar."
+            )
         print(f"  Skipping (already ingested): {path.name}", file=sys.stderr)
         return {
             "status": "skipped",
@@ -130,11 +145,6 @@ def ingest_video(
 
     if existing and force:
         print(f"  Re-ingesting (--force): {path.name}", file=sys.stderr)
-        repo.delete_video(existing.id)
-
-    # Step 2: Extract metadata
-    print(f"  Probing: {path.name}...", file=sys.stderr)
-    meta = get_video_info(path)
 
     video_id = str(uuid.uuid4())
     ingest_config = {
@@ -145,6 +155,16 @@ def ingest_video(
         "force": force,
         "dense_vision": dense_vision,
         "principles_path": str(principles_path) if principles_path else None,
+        "transcript_sidecar": transcript_sidecar is not None,
+        "provider": config.provider,
+        "transcribe_model": config.transcribe_model,
+        "vision_model": config.vision_model,
+        "embed_model": config.embed_model,
+        "chat_model": config.chat_model,
+        "api_timeout_sec": config.api_timeout_sec,
+        "api_max_retries": config.api_max_retries,
+        "allow_oauth_fallback": config.allow_oauth_fallback,
+        "allow_codex_fallback": config.allow_codex_fallback,
     }
 
     video = VideoRecord(
@@ -172,7 +192,11 @@ def ingest_video(
             "would_caption": captions,
             "would_embed": not no_embed,
             "would_dense_vision": dense_vision,
+            "would_import_transcript_sidecar": transcript_sidecar is not None,
         }
+
+    if existing and force:
+        repo.delete_video(existing.id)
 
     # Step 3: Long video warning
     if meta.duration_sec > LONG_VIDEO_WARN_MINUTES * 60:
@@ -189,6 +213,14 @@ def ingest_video(
     audio_path: Path | None = None
     frames_dir: Path | None = None
     warnings: list[str] = []
+    transcription_usage = ProviderUsage()
+    caption_usage = ProviderUsage()
+    caption_summary_usage = ProviderUsage()
+    embedding_usage = ProviderUsage()
+    cascade_settings: dict = {}
+    frame_caption_frame_count = 0
+    dense_frame_count = 0
+    transcription_source = "sidecar" if transcript_sidecar is not None else "disabled"
 
     try:
         transcript_artifacts: list[ArtifactRecord] = []
@@ -202,7 +234,30 @@ def ingest_video(
         # Step 4: Extract audio and transcribe (best-effort)
         transcribe_cfg = oai_config or config
         can_transcribe = bool(transcribe_cfg.transcribe_model)
-        if can_transcribe:
+        if transcript_sidecar is not None:
+            sidecar_meta: dict = {}
+            if transcript_sidecar.model is not None:
+                sidecar_meta["model"] = transcript_sidecar.model
+            if transcript_sidecar.provenance is not None:
+                sidecar_meta["provenance"] = transcript_sidecar.provenance
+            transcript_artifacts = [
+                ArtifactRecord(
+                    id=str(uuid.uuid4()),
+                    video_id=video_id,
+                    type="transcript",
+                    start_sec=segment.start_sec,
+                    end_sec=segment.end_sec,
+                    text=segment.text,
+                    meta_json=json.dumps(sidecar_meta) if sidecar_meta else None,
+                )
+                for segment in transcript_sidecar.segments
+            ]
+            if transcript_artifacts:
+                repo.insert_artifacts_batch(transcript_artifacts)
+                artifacts_count += len(transcript_artifacts)
+        elif can_transcribe:
+            transcription_source = "provider"
+            transcriber: OpenAITranscriber | None = None
             try:
                 print(f"  Extracting audio...", file=sys.stderr)
                 audio_path = extract_audio(path)
@@ -240,6 +295,9 @@ def ingest_video(
                 msg = f"Transcription skipped: {e}"
                 warnings.append(msg)
                 print(f"  Warning: {msg}", file=sys.stderr)
+            finally:
+                if transcriber is not None:
+                    transcription_usage.merge(transcriber.usage.snapshot())
         else:
             msg = f"Transcription disabled (provider={config.provider or 'current'})."
             warnings.append(msg)
@@ -248,6 +306,7 @@ def ingest_video(
         # Step 5: Captions — cascade (default) or legacy per-frame
         cascade_artifacts: list[ArtifactRecord] = []
         if captions:
+            cascade_receipt: dict = {}
             try:
                 l0, l1, l2 = run_cascade(
                     path,
@@ -255,6 +314,7 @@ def ingest_video(
                     config,
                     meta.duration_sec,
                     topic=topic,
+                    usage_receipt=cascade_receipt,
                 )
                 cascade_artifacts = l0 + l1 + l2
                 if cascade_artifacts:
@@ -266,8 +326,13 @@ def ingest_video(
                 msg = f"Cascade captioning skipped: {e}"
                 warnings.append(msg)
                 print(f"  Warning: {msg}", file=sys.stderr)
+            finally:
+                caption_usage.merge(cascade_receipt.get("caption"))
+                caption_summary_usage.merge(cascade_receipt.get("caption_summary"))
+                cascade_settings = cascade_receipt.get("settings") or {}
 
         if frame_captions:
+            captioner: OpenAICaptioner | None = None
             try:
                 print(
                     f"  Frame captioning enabled (fps={fps_sample}, max={max_frames}). This uses the vision API.",
@@ -277,6 +342,7 @@ def ingest_video(
                 frames_dir = frames[0][0].parent if frames else None
 
                 if frames:
+                    frame_caption_frame_count = len(frames)
                     captioner = OpenAICaptioner(config)
                     frame_paths = [f[0] for f in frames]
                     timestamps = [f[1] for f in frames]
@@ -303,9 +369,13 @@ def ingest_video(
                 msg = f"Frame captioning skipped: {e}"
                 warnings.append(msg)
                 print(f"  Warning: {msg}", file=sys.stderr)
+            finally:
+                if captioner is not None:
+                    caption_usage.merge(captioner.usage.snapshot())
 
         # Step 5b: Dense visual captions (best-effort)
         if dense_vision:
+            captioner = None
             try:
                 if not frames_dir:
                     frames = extract_frames(path, fps_sample=fps_sample, max_frames=max_frames)
@@ -321,6 +391,7 @@ def ingest_video(
                 prompt = render_dense_prompt(template_path, principles)
 
                 if frames:
+                    dense_frame_count = len(frames)
                     print(f"  Dense vision captioning enabled for {len(frames)} frame(s)...", file=sys.stderr)
                     captioner = OpenAICaptioner(config)
                     frame_paths = [f[0] for f in frames]
@@ -363,6 +434,9 @@ def ingest_video(
                 msg = f"Dense vision skipped: {e}"
                 warnings.append(msg)
                 print(f"  Warning: {msg}", file=sys.stderr)
+            finally:
+                if captioner is not None:
+                    caption_usage.merge(captioner.usage.snapshot())
 
         # Step 6: Embeddings (best-effort)
         embed_cfg = oai_config or config
@@ -373,6 +447,7 @@ def ingest_video(
             print(f"  {msg}", file=sys.stderr)
 
         if not no_embed and can_embed:
+            embedder: OpenAIEmbedder | None = None
             try:
                 all_artifacts = transcript_artifacts + caption_artifacts + dense_artifacts
                 if all_artifacts:
@@ -395,6 +470,9 @@ def ingest_video(
                 msg = f"Embeddings skipped: {e}"
                 warnings.append(msg)
                 print(f"  Warning: {msg}", file=sys.stderr)
+            finally:
+                if embedder is not None:
+                    embedding_usage.merge(embedder.usage.snapshot())
 
         # Step 7: Mark complete
         repo.update_video_status(video_id, "complete")
@@ -416,6 +494,30 @@ def ingest_video(
         "duration_sec": round(meta.duration_sec, 2),
         "artifacts_count": artifacts_count,
         "elapsed_sec": round(elapsed, 2),
+        "stage_usage": {
+            "transcription": transcription_usage.snapshot(),
+            "caption": caption_usage.snapshot(),
+            "caption_summary": caption_summary_usage.snapshot(),
+            "embedding": embedding_usage.snapshot(),
+        },
+        "ingest_settings": {
+            "provider": config.provider or "openai-compatible",
+            "transcribe_model": config.transcribe_model or None,
+            "vision_model": config.vision_model or None,
+            "embed_model": config.embed_model or None,
+            "chat_model": config.chat_model or None,
+            "api_timeout_sec": config.api_timeout_sec,
+            "api_max_retries": config.api_max_retries,
+            "allow_oauth_fallback": config.allow_oauth_fallback,
+            "allow_codex_fallback": config.allow_codex_fallback,
+            "transcription_source": transcription_source,
+            "caption_concurrency": 1,
+            "fps_sample": fps_sample,
+            "max_frames": max_frames,
+            "frame_caption_frames": frame_caption_frame_count,
+            "dense_caption_frames": dense_frame_count,
+            "cascade": cascade_settings,
+        },
     }
     if warnings:
         out["warnings"] = warnings

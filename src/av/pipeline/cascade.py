@@ -128,6 +128,7 @@ def run_cascade(
     topic: str = "general",
     chunk_duration_sec: int = DEFAULT_CHUNK_DURATION_SEC,
     frames_per_chunk: int = DEFAULT_FRAMES_PER_CHUNK,
+    usage_receipt: dict | None = None,
 ) -> tuple[list[ArtifactRecord], list[ArtifactRecord], list[ArtifactRecord]]:
     """Run the three-layer captioning cascade.
 
@@ -138,10 +139,12 @@ def run_cascade(
     layer1: list[ArtifactRecord] = []
     layer2: list[ArtifactRecord] = []
     temp_dirs: list[Path] = []
+    captioner: OpenAICaptioner | None = None
+    llm: OpenAILLM | None = None
+    num_chunks = max(1, math.ceil(duration_sec / chunk_duration_sec))
 
     try:
         # Compute chunks
-        num_chunks = max(1, math.ceil(duration_sec / chunk_duration_sec))
         captioner = OpenAICaptioner(config)
 
         meta_base = {
@@ -249,5 +252,17 @@ def run_cascade(
     finally:
         for d in temp_dirs:
             shutil.rmtree(d, ignore_errors=True)
+        if usage_receipt is not None:
+            usage_receipt.update({
+                "caption": captioner.usage.snapshot() if captioner else None,
+                "caption_summary": llm.usage.snapshot() if llm else None,
+                "settings": {
+                    "concurrency": 1,
+                    "chunk_duration_sec": chunk_duration_sec,
+                    "frames_per_chunk": frames_per_chunk,
+                    "chunk_count": num_chunks,
+                    "maximum_frame_requests": num_chunks * frames_per_chunk,
+                },
+            })
 
     return layer0, layer1, layer2

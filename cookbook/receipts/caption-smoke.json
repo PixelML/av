@@ -1,0 +1,39 @@
+{
+  "stage": "caption_smoke",
+  "model_requested": "grok-4.20-0309-non-reasoning",
+  "request_cap": 1,
+  "max_output_tokens": 200,
+  "timeout_seconds": 90,
+  "retries": 0,
+  "reserved_upstream_list_usd": 2.501,
+  "proxy_billed_usd": null,
+  "rates": {
+    "input_per_million_under_200k": 1.25,
+    "output_per_million_under_200k": 2.5,
+    "input_per_million_200k_plus": 2.5,
+    "output_per_million_200k_plus": 5.0,
+    "source": "https://docs.x.ai/developers/models/grok-4.20-0309-non-reasoning.md",
+    "as_of": "2026-09-18"
+  },
+  "frame_timestamp_requested_sec": 7.5,
+  "frame_sha256": "f611aefc8c2d4c63c1cb5ae61b6e1878777d2be6ae8fc54ce9a27844c342c42e",
+  "frame_width": 640,
+  "status": "response",
+  "model_returned": "grok-4.20-0309-non-reasoning",
+  "wall_seconds": 2.135960043000523,
+  "usage": {
+    "completion_tokens": 93,
+    "total_tokens": 577,
+    "prompt_tokens": 484,
+    "prompt_tokens_details": {
+      "cached_tokens": 192
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "cache_aware_usd_estimate": 0.0006359,
+  "miss_only_usd_estimate": 0.0008375,
+  "basis": "estimated",
+  "note": "Official upstream list rates; proxy billing and mapping beyond returned model ID unverified."
+}

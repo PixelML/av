@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "stage": "restored_route_max_completion_tokens_frame_caption_probe",
+  "status": "incompatible",
+  "runtime_commit": "6a1cde2fb0009759e45983ff1f9b9d5afc50f9fa",
+  "model_requested": "grok-4.20-0309-non-reasoning",
+  "model_returned": "grok-4.20-0309-non-reasoning",
+  "token_limit_parameter": "max_completion_tokens",
+  "requested_output_cap": 32,
+  "automatic_retries": 0,
+  "hidden_fallbacks": false,
+  "request_count": 1,
+  "successful_provider_responses": 1,
+  "source_sha256": "863559e8630cae8019139edc03e0a9ea0437aac2c2f48a811f2d31f9aa14a575",
+  "frame_timestamp_sec": 0.0,
+  "frame_sha256": "0907fcb6670ebb7de71954b822b7d06306337eec88d43ac8ce2ace6f3d74acd0",
+  "frame_dimensions": [
+    1280,
+    720
+  ],
+  "jpeg_quality": 2,
+  "wall_seconds": 4.679620450006041,
+  "usage": {
+    "completion_tokens": 260,
+    "prompt_tokens": 1168,
+    "total_tokens": 1428,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": null,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    }
+  },
+  "usage_complete": true,
+  "cap_enforced": false,
+  "finish_reason": "stop",
+  "caption_nonempty": true,
+  "caption_chars": 1229,
+  "provider_response_metadata": {
+    "response_id_present": true,
+    "created": 0,
+    "system_fingerprint": null,
+    "service_tier": null
+  },
+  "error_type": null,
+  "cache_aware_list_estimate_usd": 0.0009004,
+  "proxy_billed_usd": null,
+  "basis": "estimated from measured usage and published upstream list rates",
+  "private_endpoint_or_credential_included": false,
+  "stop_decision": "No full ingestion or query followed because the provider returned 260 completion tokens despite requested max_completion_tokens=32."
+}
