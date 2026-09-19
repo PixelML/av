@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "stage": "grok_dense_ingestion",
+  "status": "blocked_before_provider_request",
+  "runtime_commit": "e24845de7b58eb55062bbea4d5efe72e8c37d30b",
+  "model_requested": "grok-4.20-0309-non-reasoning",
+  "settings": {
+    "sample_frames": 300,
+    "fps_sample": 0.06666666666666667,
+    "frame_dimensions": [1280, 720],
+    "jpeg_quality": 2,
+    "embeddings": false,
+    "transcript_windows": 75,
+    "automatic_retries": 0,
+    "hidden_fallbacks": false,
+    "completion_cap_advisory": true
+  },
+  "wall_seconds": 42.45906633300183,
+  "request_attempts": 0,
+  "successful_provider_responses": 0,
+  "usage": null,
+  "cache_aware_list_estimate_usd": 0,
+  "artifacts_persisted": {
+    "transcript": 75,
+    "dense_caption": 0
+  },
+  "sanitized_failure": {
+    "stage": "local_frame_extraction_preflight",
+    "error_type": "FFprobeTimeout",
+    "message": "Dense vision was skipped because a local media probe exceeded its timeout."
+  },
+  "stop_decision": "No retry and no query against incomplete evidence."
+}

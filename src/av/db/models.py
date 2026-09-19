@@ -49,6 +49,7 @@ class SearchResult(BaseModel):
     video_id: str
     filename: str
     timestamp_sec: float
+    end_sec: float | None = None
     timestamp_formatted: str
     source_type: str
     text: str

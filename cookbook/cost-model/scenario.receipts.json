@@ -1,0 +1,442 @@
+{
+  "schema_version": 1,
+  "experiment": {
+    "status": "completed_grok_jev_single_question",
+    "implementation": "av",
+    "receipt_directory": "../receipts",
+    "note": "Completed external ASR, 300-frame Grok ingestion, one Grok-only legacy query, and one Jev-refined Grok answer receipt exist. This is a single-question comparison, not an aggregate quality claim.",
+    "projection": "Repeated-query totals are projections from entered stage costs, not additional measured runs."
+  },
+  "indexing": [
+    {
+      "name": "grok_caption_ingestion",
+      "usd": "0.5048525",
+      "basis": "estimated",
+      "note": "Measured usage for 300 successful frame-caption requests multiplied by recorded upstream list rates; six responses exceeded the requested 200-token advisory cap, and billed dollars are unknown."
+    },
+    {
+      "name": "external_asr",
+      "usd": "0.0685709",
+      "basis": "estimated",
+      "note": "Measured tokens for the completed 75-window ASR run multiplied by recorded upstream list rates; billed dollars are unknown."
+    },
+    {
+      "name": "embedding",
+      "usd": 0,
+      "basis": "not_used",
+      "note": "The documented partial reproduction used transcript-only FTS retrieval with embeddings disabled."
+    },
+    {
+      "name": "preprocessing",
+      "usd": null,
+      "basis": "unknown",
+      "note": "Local media extraction, compute, storage, and network allocation were not priced."
+    }
+  ],
+  "query": {
+    "retrieval": {
+      "usd": 0,
+      "basis": "not_used",
+      "note": "The completed Jev-refined query used local FTS retrieval with embeddings disabled; local compute remains unpriced."
+    },
+    "judge": {
+      "usd": "0.000140784",
+      "basis": "estimated",
+      "note": "Two completed Jev requests: 1,888 relevance + 1,464 support input tokens at $42 per billion ($0.042 per million); output is free. Source: https://docs.typesafe.ai/models.md, verified 2026-09-19. Corrected units; billed dollars remain unknown."
+    },
+    "answer": {
+      "usd": "0.00165685",
+      "basis": "estimated",
+      "note": "One Grok answer request with complete measured usage, including 128 cached prompt tokens; billed dollars are unknown."
+    },
+    "stronger_fallback": {
+      "frequency": 0,
+      "per_invocation": {
+        "usd": 0,
+        "basis": "not_used",
+        "note": "No stronger-inspection request ran."
+      }
+    }
+  },
+  "period": {
+    "label": "same period as entered query volume",
+    "hosting": {
+      "usd": null,
+      "basis": "unknown",
+      "note": "Compute and hosting allocation were not metered."
+    },
+    "storage": {
+      "usd": null,
+      "basis": "unknown",
+      "note": "Media, index, transcript, and receipt storage allocation were not priced."
+    }
+  },
+  "baseline": {
+    "uncached_per_query": {
+      "usd": "0.308076",
+      "basis": "estimated",
+      "note": "One completed Gemini 3.8 native-video query: measured tokens at full published input/output rates. This is an uncached counterfactual estimate; implicit cached usage and actual billing are unknown."
+    },
+    "cache": {
+      "policy": "No explicit cache was created for the recorded request; implicit cached usage was not reported. The full-rate baseline is an uncached counterfactual, not a measured cache miss.",
+      "hit_rate": null,
+      "hit_per_query": {
+        "usd": null,
+        "basis": "unknown",
+        "note": "No cache-hit request was measured."
+      },
+      "write_period": {
+        "usd": 0,
+        "basis": "not_used",
+        "note": "No explicit cache write was requested."
+      },
+      "storage_period": {
+        "usd": 0,
+        "basis": "not_used",
+        "note": "No explicit cache storage was requested."
+      }
+    }
+  },
+  "measured_usage": [
+    {
+      "name": "completed_asr",
+      "requests": 75,
+      "input_tokens": 118228,
+      "output_tokens": 13241,
+      "thinking_tokens": null,
+      "cached_tokens": null,
+      "outcome": "completed",
+      "receipt": "../receipts/asr.json",
+      "note": "Complete source audio submitted in fixed windows; transcript accuracy and word completeness were not verified."
+    },
+    {
+      "name": "failed_asr_alignment",
+      "requests": 1,
+      "input_tokens": 7634,
+      "output_tokens": 1866,
+      "thinking_tokens": null,
+      "cached_tokens": null,
+      "outcome": "failed",
+      "receipt": "../receipts/asr.json"
+    },
+    {
+      "name": "caption_smoke",
+      "requests": 1,
+      "input_tokens": 484,
+      "output_tokens": 93,
+      "thinking_tokens": 0,
+      "cached_tokens": 192,
+      "outcome": "completed",
+      "receipt": "../receipts/caption-smoke.json"
+    },
+    {
+      "name": "aborted_caption_attempt",
+      "requests": 4,
+      "input_tokens": 5004,
+      "output_tokens": 656,
+      "thinking_tokens": 0,
+      "cached_tokens": 768,
+      "outcome": "aborted",
+      "receipt": "../receipts/caption-aborted.json"
+    },
+    {
+      "name": "gemini38_native_video_baseline",
+      "requests": 1,
+      "input_tokens": 409548,
+      "output_tokens": 39,
+      "thinking_tokens": 205,
+      "cached_tokens": null,
+      "outcome": "completed",
+      "receipt": "../receipts/gemini38-baseline.json"
+    },
+    {
+      "name": "direct_max_completion_tokens_cap_probe",
+      "requests": 1,
+      "input_tokens": 1168,
+      "output_tokens": 309,
+      "thinking_tokens": 0,
+      "cached_tokens": 192,
+      "outcome": "incompatible",
+      "receipt": "../receipts/cap-probe-32-direct-incompatible.json",
+      "note": "Exact model returned usage but ignored requested max_completion_tokens=32."
+    },
+    {
+      "name": "restored_route_max_completion_tokens_cap_probe",
+      "requests": 1,
+      "input_tokens": 1168,
+      "output_tokens": 260,
+      "thinking_tokens": 0,
+      "cached_tokens": 1152,
+      "outcome": "incompatible",
+      "receipt": "../receipts/cap-probe-32-restored-incompatible.json",
+      "note": "Restored route returned the exact model and complete usage but ignored requested max_completion_tokens=32."
+    },
+    {
+      "name": "live_ingestion_local_probe_timeout",
+      "requests": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "thinking_tokens": null,
+      "cached_tokens": null,
+      "outcome": "blocked_before_provider_request",
+      "receipt": "../receipts/live-ingestion-local-probe-timeout.json",
+      "note": "The completed transcript imported, but a local media probe timed out before 300-frame extraction; no provider request was attempted."
+    },
+    {
+      "name": "grok_dense_ingestion",
+      "requests": 300,
+      "input_tokens": 375300,
+      "output_tokens": 38483,
+      "thinking_tokens": 0,
+      "cached_tokens": 57600,
+      "outcome": "completed",
+      "receipt": "../receipts/grok-live-ingestion.json",
+      "note": "300/300 frame-caption requests succeeded and 75 transcript windows persisted; six completion counts exceeded the requested 200-token advisory cap."
+    },
+    {
+      "name": "grok_legacy_query",
+      "requests": 1,
+      "input_tokens": 1256,
+      "output_tokens": 45,
+      "thinking_tokens": 0,
+      "cached_tokens": 128,
+      "outcome": "completed_grok_only",
+      "receipt": "../receipts/grok-legacy-query.json",
+      "note": "Correct answer with transcript citation through the legacy route; retained separately from the later Jev-refined run."
+    },
+    {
+      "name": "jev_credential_blocker",
+      "requests": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "thinking_tokens": null,
+      "cached_tokens": null,
+      "outcome": "blocked_before_request",
+      "receipt": "../receipts/jev-credential-blocked.json",
+      "note": "No configured AV_TYPESAFE_API_KEY credential was available."
+    },
+    {
+      "name": "jev_refined_query",
+      "requests": 3,
+      "input_tokens": 4533,
+      "output_tokens": 236,
+      "thinking_tokens": 0,
+      "cached_tokens": 128,
+      "outcome": "completed",
+      "receipt": "../receipts/jev-refined-query.json",
+      "note": "Two Jev requests (relevance and support) plus one Grok answer request; complete usage was returned for each stage."
+    }
+  ],
+  "experiment_spend": [
+    {
+      "name": "completed_asr",
+      "usd": "0.0685709",
+      "basis": "estimated",
+      "category": "one_time_ingestion",
+      "outcome": "completed",
+      "receipt": "../receipts/asr.json",
+      "usage_ref": "completed_asr",
+      "note": "Upstream list-rate estimate from measured tokens; not billed dollars."
+    },
+    {
+      "name": "failed_asr_alignment",
+      "usd": "0.0069552",
+      "basis": "estimated",
+      "category": "failed_attempt",
+      "outcome": "failed",
+      "receipt": "../receipts/asr.json",
+      "usage_ref": "failed_asr_alignment",
+      "note": "Rejected alignment attempt retained as experiment spend."
+    },
+    {
+      "name": "caption_smoke",
+      "usd": "0.0006359",
+      "basis": "estimated",
+      "category": "smoke_test",
+      "outcome": "completed",
+      "receipt": "../receipts/caption-smoke.json",
+      "usage_ref": "caption_smoke",
+      "note": "Cache-aware upstream list-rate estimate; proxy billing is unknown."
+    },
+    {
+      "name": "aborted_caption_attempt",
+      "usd": "0.0070886",
+      "basis": "estimated",
+      "category": "failed_attempt",
+      "outcome": "aborted",
+      "receipt": "../receipts/caption-aborted.json",
+      "usage_ref": "aborted_caption_attempt",
+      "note": "Four measured responses before the guard stopped ingestion; no captions were persisted."
+    },
+    {
+      "name": "gemini38_native_video_baseline",
+      "usd": "0.308076",
+      "basis": "estimated",
+      "category": "direct_video_baseline_query",
+      "outcome": "completed",
+      "receipt": "../receipts/gemini38-baseline.json",
+      "usage_ref": "gemini38_native_video_baseline",
+      "note": "Full-rate upstream list estimate from measured input, output, and thinking tokens; not billed dollars."
+    },
+    {
+      "name": "direct_max_completion_tokens_cap_probe",
+      "usd": "0.0020309",
+      "basis": "estimated",
+      "category": "compatibility_probe",
+      "outcome": "incompatible",
+      "receipt": "../receipts/cap-probe-32-direct-incompatible.json",
+      "usage_ref": "direct_max_completion_tokens_cap_probe",
+      "note": "Cache-aware upstream list-rate estimate; the model returned 309 completion tokens despite requested cap 32."
+    },
+    {
+      "name": "restored_route_max_completion_tokens_cap_probe",
+      "usd": "0.0009004",
+      "basis": "estimated",
+      "category": "compatibility_probe",
+      "outcome": "incompatible",
+      "receipt": "../receipts/cap-probe-32-restored-incompatible.json",
+      "usage_ref": "restored_route_max_completion_tokens_cap_probe",
+      "note": "Cache-aware upstream list-rate estimate; the restored route returned 260 completion tokens despite requested cap 32."
+    },
+    {
+      "name": "live_ingestion_local_probe_timeout",
+      "usd": 0,
+      "basis": "not_used",
+      "category": "failed_attempt",
+      "outcome": "blocked_before_provider_request",
+      "receipt": "../receipts/live-ingestion-local-probe-timeout.json",
+      "note": "No provider request was attempted; local compute, storage, and network allocation remain unknown."
+    },
+    {
+      "name": "grok_dense_ingestion",
+      "usd": "0.5048525",
+      "basis": "estimated",
+      "category": "one_time_ingestion",
+      "outcome": "completed",
+      "receipt": "../receipts/grok-live-ingestion.json",
+      "usage_ref": "grok_dense_ingestion",
+      "note": "Cache-aware upstream list-rate estimate; the proxy bill and infrastructure costs remain unknown."
+    },
+    {
+      "name": "grok_legacy_query",
+      "usd": "0.0015481",
+      "basis": "estimated",
+      "category": "av_grok_only_query",
+      "outcome": "completed_grok_only",
+      "receipt": "../receipts/grok-legacy-query.json",
+      "usage_ref": "grok_legacy_query",
+      "note": "Cache-aware upstream list-rate estimate for the earlier Grok-only answer request; retained as a separate experiment attempt."
+    },
+    {
+      "name": "jev_credential_blocker",
+      "usd": 0,
+      "basis": "not_used",
+      "category": "blocked_comparison_arm",
+      "outcome": "blocked_before_request",
+      "receipt": "../receipts/jev-credential-blocked.json",
+      "note": "No provider request was attempted because the required credential was absent."
+    },
+    {
+      "name": "jev_refined_query",
+      "usd": "0.001797634",
+      "basis": "estimated",
+      "category": "av_grok_jev_query",
+      "outcome": "completed",
+      "receipt": "../receipts/jev-refined-query.json",
+      "usage_ref": "jev_refined_query",
+      "note": "Corrected token-derived list-rate estimate for two Jev requests at $0.042/M input with free output, plus one cache-aware Grok answer request; no retry or fallback occurred. Original derived estimates are preserved in the receipt correction record."
+    }
+  ],
+  "unknown_costs": [
+    {
+      "name": "provider_or_proxy_billed_total",
+      "usd": null,
+      "basis": "unknown",
+      "category": "billing",
+      "note": "Account and proxy billed dollars were not available; list-rate estimates are not invoices."
+    },
+    {
+      "name": "compute_storage_network",
+      "usd": null,
+      "basis": "unknown",
+      "category": "infrastructure",
+      "note": "Local compute, media/index storage, upload, and network costs were not allocated."
+    }
+  ],
+  "reservations": [
+    {
+      "name": "caption_smoke_request_ceiling",
+      "usd": "2.501",
+      "status": "released_after_metering",
+      "receipt": "../receipts/caption-smoke.json",
+      "receipt_field": "reserved_upstream_list_usd",
+      "note": "The receipt-level ceiling was released after the successful response reported usage; the measured cache-aware estimate remains in experiment_spend."
+    },
+    {
+      "name": "gemini38_native_video_baseline_ceiling",
+      "usd": "0.37845825",
+      "status": "released_after_metering",
+      "receipt": "../receipts/gemini38-baseline.json",
+      "receipt_field": "cost.worst_case_reserved_list_estimate_usd",
+      "note": "The worst-case request ceiling was released after provider usage was metered; the full-rate estimate remains in experiment_spend."
+    },
+    {
+      "name": "caption_ingest",
+      "usd": "0.90",
+      "status": "superseded",
+      "note": "Released unused because the restored-route cap gate failed before ingestion."
+    },
+    {
+      "name": "query_judge_and_answer",
+      "usd": "0.20",
+      "status": "superseded",
+      "note": "Superseded by the metered-query reservation after the cap gate reopened and the Grok-only query ran."
+    },
+    {
+      "name": "earlier_cap_probe_ceiling",
+      "usd": "0.01",
+      "status": "released_after_metering",
+      "receipt": "../receipts/cap-probe-32-direct-incompatible.json",
+      "note": "The ceiling covered the earlier no-route attempt and later direct measured probe; it was released after measured usage was recorded."
+    },
+    {
+      "name": "restored_route_cap_probe_ceiling",
+      "usd": "0.01",
+      "status": "released_after_metering",
+      "receipt": "../receipts/cap-probe-32-restored-incompatible.json",
+      "note": "Fresh restored-route ceiling released after the one authorized request returned complete usage."
+    },
+    {
+      "name": "fresh_live_caption_ingest",
+      "usd": "0.90",
+      "status": "superseded",
+      "receipt": "../receipts/live-ingestion-local-probe-timeout.json",
+      "note": "Released unused after local frame-extraction preflight timed out before provider request 1; a later fresh reservation covered the completed metered ingestion."
+    },
+    {
+      "name": "grok_dense_ingestion",
+      "usd": "0.90",
+      "status": "released_after_metering",
+      "receipt": "../receipts/grok-live-ingestion.json",
+      "receipt_field": "reservation.reserved_usd",
+      "note": "Released after 300 responses returned complete usage; the measured estimate remains in experiment_spend."
+    },
+    {
+      "name": "query_judge_and_answer_metered",
+      "usd": "0.20",
+      "status": "released_after_metering",
+      "receipt": "../receipts/grok-legacy-query.json",
+      "receipt_field": "reservation.reserved_usd",
+      "note": "Released after the Grok answer returned complete usage; the Jev arm remained blocked with zero requests and no balance retained."
+    },
+    {
+      "name": "jev_refined_query_judge_and_answer",
+      "usd": "0.20",
+      "status": "released_after_metering",
+      "receipt": "../receipts/jev-refined-query.json",
+      "receipt_field": "reservation.reserved_usd",
+      "note": "Released after two Jev requests and one Grok answer returned complete usage."
+    }
+  ],
+  "cumulative_cap_usd": "5"
+}

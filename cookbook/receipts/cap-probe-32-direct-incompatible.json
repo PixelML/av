@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "stage": "max_completion_tokens_frame_caption_probe",
+  "status": "incompatible",
+  "runtime_commit": "7e1a0ce1271e4d7b88d2b6cb5b0bbb9103a01ee6",
+  "model_requested": "grok-4.20-0309-non-reasoning",
+  "model_returned": "grok-4.20-0309-non-reasoning",
+  "token_limit_parameter": "max_completion_tokens",
+  "requested_output_cap": 32,
+  "automatic_retries": 0,
+  "hidden_fallbacks": false,
+  "source_sha256": "863559e8630cae8019139edc03e0a9ea0437aac2c2f48a811f2d31f9aa14a575",
+  "frame_timestamp_sec": 0.0,
+  "frame_sha256": "0907fcb6670ebb7de71954b822b7d06306337eec88d43ac8ce2ace6f3d74acd0",
+  "frame_dimensions": [
+    1280,
+    720
+  ],
+  "jpeg_quality": 2,
+  "wall_seconds": 5.13789195100253,
+  "usage": {
+    "completion_tokens": 309,
+    "prompt_tokens": 1168,
+    "total_tokens": 1477,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": null,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 192
+    }
+  },
+  "usage_complete": true,
+  "cap_enforced": false,
+  "finish_reason": "stop",
+  "caption_nonempty": true,
+  "caption_chars": 1410,
+  "error_type": null,
+  "cache_aware_list_estimate_usd": 0.0020309,
+  "proxy_billed_usd": null,
+  "basis": "estimated from measured usage and published upstream list rates",
+  "private_endpoint_or_credential_included": false,
+  "stop_decision": "No full ingestion or query followed because the provider returned 309 completion tokens despite requested max_completion_tokens=32."
+}

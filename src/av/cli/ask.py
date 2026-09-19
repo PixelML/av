@@ -20,13 +20,25 @@ def register(app: typer.Typer) -> None:
         video_id: str = typer.Option(None, "--video-id", "-v", help="Restrict to specific video"),
         top_k: int = typer.Option(DEFAULT_TOP_K, "--top-k", "-k", help="Context chunks"),
         db: str = typer.Option(None, "--db", help="Database path override"),
+        no_refine: bool = typer.Option(
+            False,
+            "--no-refine",
+            help="Skip configured Jev relevance and scene refinement",
+        ),
     ) -> None:
         """Ask a question about indexed video content (RAG)."""
         config = get_config(db_path=Path(db) if db else None)
         repo = Repository(config.db_path)
 
         try:
-            result = ask(question, repo, config, video_id=video_id, top_k=top_k)
+            result = ask(
+                question,
+                repo,
+                config,
+                video_id=video_id,
+                top_k=top_k,
+                refine=not no_refine,
+            )
             output_json(result)
         except Exception as e:
             error(str(e))

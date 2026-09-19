@@ -34,10 +34,15 @@ def register(app: typer.Typer) -> None:
             help="Topic for captioning: security, traffic, warehouse, retail, meeting, general, or a custom description",
         ),
         frame_captions: bool = typer.Option(False, "--frame-captions", help="Legacy per-frame captioning (old --captions behavior)"),
+        transcript_json: Path | None = typer.Option(
+            None, "--transcript-json", exists=True, file_okay=True, dir_okay=False,
+            readable=True, help="Import timestamped transcript JSON for one video instead of running ASR",
+        ),
         db: str = typer.Option(None, "--db", help="Database path override"),
     ) -> None:
         """Ingest video file(s) into the av index."""
         videos = []
+        transcript_path = transcript_json.expanduser().resolve() if transcript_json else None
 
         if is_url(path):
             progress("Detected URL input. Downloading video first...")
@@ -49,10 +54,17 @@ def register(app: typer.Typer) -> None:
             videos = [downloaded]
         else:
             target = Path(path).expanduser().resolve()
+            if transcript_path is not None and target.is_dir():
+                error("--transcript-json requires one concrete video file or URL, not a directory.")
+                raise typer.Exit(1)
             videos = discover_videos(target)
 
         if not videos:
             error(f"No video files found at: {path}")
+            raise typer.Exit(1)
+
+        if transcript_path is not None and len(videos) != 1:
+            error("--transcript-json requires exactly one video.")
             raise typer.Exit(1)
 
         config = get_config(db_path=Path(db) if db else None)
@@ -79,6 +91,7 @@ def register(app: typer.Typer) -> None:
                     dense_output_dir=Path(dense_output_dir).expanduser().resolve() if dense_output_dir else None,
                     topic=topic,
                     frame_captions=frame_captions,
+                    transcript_json=transcript_path,
                 )
                 results.append(result)
             except AVError as e:
@@ -91,3 +104,6 @@ def register(app: typer.Typer) -> None:
             output_json(results[0])
         else:
             output_json({"results": results, "total": len(results)})
+
+        if transcript_path is not None and any(result.get("status") == "error" for result in results):
+            raise typer.Exit(1)

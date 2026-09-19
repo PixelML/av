@@ -303,6 +303,7 @@ class Repository:
                     video_id=r["video_id"],
                     filename=r["filename"],
                     timestamp_sec=r["start_sec"],
+                    end_sec=r["end_sec"],
                     timestamp_formatted=_fmt_timestamp(r["start_sec"]),
                     source_type=r["type"],
                     text=r["text"],
@@ -310,6 +311,75 @@ class Repository:
                 )
             )
         return results
+
+    def get_refinement_window(
+        self,
+        video_id: str,
+        center_sec: float,
+        *,
+        before: int = 6,
+        after: int = 6,
+    ) -> list[ArtifactRecord]:
+        """Return a bounded run of query-time artifacts around one hit.
+
+        Long whole-video summaries and reports are deliberately excluded: they are
+        useful retrieval hints, but they are not fixed-time scene chunks and must not
+        cause scene refinement to widen into an archive scan.
+        """
+        allowed = ("transcript", "caption", "scene", "dense_caption")
+        marks = ",".join("?" for _ in allowed)
+        prev_rows = self.conn.execute(
+            f"""SELECT * FROM artifacts
+                WHERE video_id = ? AND type IN ({marks}) AND text != '' AND start_sec <= ?
+                ORDER BY start_sec DESC, id DESC
+                LIMIT ?""",
+            (video_id, *allowed, center_sec, max(before + 1, 1)),
+        ).fetchall()
+        next_rows = self.conn.execute(
+            f"""SELECT * FROM artifacts
+                WHERE video_id = ? AND type IN ({marks}) AND text != '' AND start_sec > ?
+                ORDER BY start_sec ASC, id ASC
+                LIMIT ?""",
+            (video_id, *allowed, center_sec, max(after, 0)),
+        ).fetchall()
+        rows = list(reversed(prev_rows)) + list(next_rows)
+        seen: set[str] = set()
+        out: list[ArtifactRecord] = []
+        for row in rows:
+            if row["id"] in seen:
+                continue
+            seen.add(row["id"])
+            out.append(ArtifactRecord(**dict(row)))
+        return out
+
+    def get_artifacts_overlapping(
+        self,
+        video_id: str,
+        start_sec: float,
+        end_sec: float,
+        *,
+        limit: int = 50,
+    ) -> list[ArtifactRecord]:
+        """Return bounded scene evidence from one video only."""
+        rows = self.conn.execute(
+            """SELECT * FROM artifacts
+               WHERE video_id = ?
+                 AND type IN ('transcript', 'caption', 'scene', 'dense_caption')
+                 AND text != ''
+                 AND (
+                   (COALESCE(end_sec, start_sec) > start_sec
+                    AND start_sec < ?
+                    AND end_sec > ?)
+                   OR
+                   (COALESCE(end_sec, start_sec) <= start_sec
+                    AND start_sec >= ?
+                    AND start_sec <= ?)
+                 )
+               ORDER BY start_sec, id
+               LIMIT ?""",
+            (video_id, end_sec, start_sec, start_sec, end_sec, limit),
+        ).fetchall()
+        return [ArtifactRecord(**dict(row)) for row in rows]
 
     def get_embeddings_for_artifacts(self, artifact_ids: list[str]) -> dict[str, list[float]]:
         """Load embedding vectors for a set of artifact IDs."""
