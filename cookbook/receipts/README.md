@@ -15,6 +15,7 @@ because those fields are needed to interpret the recorded result.
 | [caption-smoke.json](caption-smoke.json) | Successful one-frame caption smoke request |
 | [cap-probe-32-incompatible.json](cap-probe-32-incompatible.json) | 32-token cap probe blocked by HTTP 502/no available route; usage unknown |
 | [cap-probe-32-direct-incompatible.json](cap-probe-32-direct-incompatible.json) | Direct exact-model 32-token cap probe returned usage but produced 309 completion tokens; output cap ignored |
+| [cap-probe-32-restored-incompatible.json](cap-probe-32-restored-incompatible.json) | Restored-route exact-model probe at commit `6a1cde2` produced 260 completion tokens against cap 32; ingestion/query stopped |
 
 The receipts are evidence for those individual attempts only. No completed AV
 Grok+Jev comparison exists yet. They do not establish speed, cost, or quality
