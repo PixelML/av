@@ -1,6 +1,6 @@
 ---
 name: agentic-video-memory
-version: 0.1.0
+version: 0.2.0
 description: Video memory for AI agents. Ingest, search, and ask questions over video content.
 homepage: https://agentic.video
 ---
@@ -382,7 +382,7 @@ Print version info.
 **Output (stdout, JSON):**
 
 ```json
-{"version": "0.1.0", "package": "pixelml-av"}
+{"version": "0.2.0", "package": "pixelml-av"}
 ```
 
 ## Agent Integration Patterns
