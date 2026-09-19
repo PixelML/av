@@ -40,9 +40,9 @@
       "note": "The completed Jev-refined query used local FTS retrieval with embeddings disabled; local compute remains unpriced."
     },
     "judge": {
-      "usd": "0.140784",
+      "usd": "0.000140784",
       "basis": "estimated",
-      "note": "Two completed Jev requests: relevance and support. Measured input/output token usage multiplied by recorded list rates; billed dollars are unknown."
+      "note": "Two completed Jev requests: 1,888 relevance + 1,464 support input tokens at $42 per billion ($0.042 per million); output is free. Source: https://docs.typesafe.ai/models.md, verified 2026-09-19. Corrected units; billed dollars remain unknown."
     },
     "answer": {
       "usd": "0.00165685",
@@ -75,11 +75,11 @@
     "uncached_per_query": {
       "usd": "0.308076",
       "basis": "estimated",
-      "note": "One completed Gemini 3.8 native-video query: measured provider tokens multiplied by recorded upstream list rates; actual billing is unknown."
+      "note": "One completed Gemini 3.8 native-video query: measured tokens at full published input/output rates. This is an uncached counterfactual estimate; implicit cached usage and actual billing are unknown."
     },
     "cache": {
-      "policy": "disabled for the single recorded baseline request; no reusable cache was explicitly created",
-      "hit_rate": 0,
+      "policy": "No explicit cache was created for the recorded request; implicit cached usage was not reported. The full-rate baseline is an uncached counterfactual, not a measured cache miss.",
+      "hit_rate": null,
       "hit_per_query": {
         "usd": null,
         "basis": "unknown",
@@ -338,13 +338,13 @@
     },
     {
       "name": "jev_refined_query",
-      "usd": "0.14244085",
+      "usd": "0.001797634",
       "basis": "estimated",
       "category": "av_grok_jev_query",
       "outcome": "completed",
       "receipt": "../receipts/jev-refined-query.json",
       "usage_ref": "jev_refined_query",
-      "note": "Cache-aware upstream list-rate estimate for two Jev requests and one Grok answer request; no retry or fallback occurred."
+      "note": "Corrected token-derived list-rate estimate for two Jev requests at $0.042/M input with free output, plus one cache-aware Grok answer request; no retry or fallback occurred. Original derived estimates are preserved in the receipt correction record."
     }
   ],
   "unknown_costs": [

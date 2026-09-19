@@ -18,14 +18,15 @@
     "media_resolution": "low",
     "media_processing": "static",
     "input": "native video and audio",
-    "comparison_note": "This is not sampling-equivalent to the incomplete AV arm."
+    "comparison_note": "The completed AV arm used 300 sampled frames plus a coarse external transcript sidecar; these inputs are not sampling-equivalent to this native video/audio request."
   },
   "request_policy": {
     "generation_attempts": 1,
     "automatic_retries": 0,
     "max_output_tokens_including_thoughts": 8192,
     "thinking_level": "high",
-    "explicit_cache": false
+    "explicit_cache": false,
+    "cache_note": "No explicit cache was created. Implicit cached-token usage was not returned and remains unknown."
   },
   "usage": {
     "input_tokens": 409548,
@@ -45,7 +46,8 @@
     "worst_case_reserved_list_estimate_usd": 0.37845825,
     "basis": "Measured tokens multiplied by published paid-tier list rates; not a billing invoice.",
     "provider_or_proxy_billed_usd": null,
-    "compute_storage_network_usd": null
+    "compute_storage_network_usd": null,
+    "cache_adjusted_list_estimate_usd": null
   },
   "limitations": {
     "answer_quality_reviewed": false,

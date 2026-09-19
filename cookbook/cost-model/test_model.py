@@ -7,7 +7,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from build_nb import build_notebook
-from model import experiment_report, experiment_spend, scenario, token_cost
+from model import experiment_report, experiment_spend, rate_per_million, scenario, token_cost
 
 HERE = Path(__file__).resolve().parent
 RECEIPTS = HERE.parent / "receipts"
@@ -100,7 +100,7 @@ class CostAccountingTests(unittest.TestCase):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
         report = experiment_report(data)
         self.assertEqual(report["list_rate_estimates"]["known_subtotal_usd"],
-                         Decimal("1.04309935"))
+                         Decimal("0.902456134"))
         self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("6.19945825"))
         self.assertEqual(report["reservations"]["total_retained_usd"], Decimal("0"))
         self.assertEqual(
@@ -108,8 +108,8 @@ class CostAccountingTests(unittest.TestCase):
             Decimal("4.19945825"),
         )
         self.assertEqual(report["reservations"]["status_totals_usd"]["superseded"], Decimal("2.00"))
-        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("1.04309935"))
-        self.assertEqual(report["remaining_cap_usd"], Decimal("3.95690065"))
+        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("0.902456134"))
+        self.assertEqual(report["remaining_cap_usd"], Decimal("4.097543866"))
         self.assertIsNone(report["unknown_costs"]["complete_total_usd"])
         self.assertEqual(
             [item["outcome"] for item in report["failures"]],
@@ -154,6 +154,46 @@ class CostAccountingTests(unittest.TestCase):
             receipt["limitations"]["paired_av_grok_jev_run_receipt"],
             "../receipts/jev-refined-query.json",
         )
+
+    def test_jev_published_billion_rate_recomputes_receipt_and_ledger(self):
+        receipt = json.loads((RECEIPTS / "jev-refined-query.json").read_text())
+        published = receipt["pricing"]["jev"]
+        self.assertEqual(published["source_url"], "https://docs.typesafe.ai/models.md")
+        self.assertEqual(published["published_token_unit"], "billion")
+        self.assertEqual(published["published_input_usd"], "42")
+        self.assertEqual(published["published_output_usd"], "0")
+        input_rate = rate_per_million(published["published_input_usd"], published["published_token_unit"])
+        output_rate = rate_per_million(published["published_output_usd"], published["published_token_unit"])
+        self.assertEqual(input_rate, Decimal("0.042"))
+        self.assertEqual(output_rate, Decimal("0"))
+        self.assertEqual(input_rate, Decimal(published["input_usd_per_million"]))
+        self.assertEqual(output_rate, Decimal(published["output_usd_per_million"]))
+        judge = Decimal("0")
+        for stage in ("relevance", "support"):
+            usage = receipt["stage_usage"][stage]
+            estimate = token_cost(usage["input_tokens"], usage["output_tokens"], input_rate, output_rate)
+            self.assertEqual(estimate, Decimal(usage["estimated_usd"]))
+            # A nonzero reported output count is still free under the published rate.
+            self.assertEqual(estimate, token_cost(usage["input_tokens"], 0, input_rate, output_rate))
+            judge += estimate
+        total = judge + Decimal(receipt["stage_usage"]["answer"]["estimated_usd"])
+        self.assertEqual(total, Decimal(receipt["cache_aware_list_estimate_usd"]))
+        data = json.loads((HERE / "scenario.receipts.json").read_text())
+        self.assertEqual(judge, Decimal(data["query"]["judge"]["usd"]))
+        entry = next(row for row in data["experiment_spend"] if row["name"] == "jev_refined_query")
+        self.assertEqual(total, Decimal(entry["usd"]))
+        correction = receipt["cost_correction"]
+        previous = correction["original_derived_estimates"]
+        self.assertEqual(Decimal(previous["query_estimated_usd"]) - total, Decimal(correction["estimate_reduction_usd"]))
+        self.assertEqual(
+            Decimal(previous["known_cumulative_list_estimate_usd"]) - Decimal(correction["estimate_reduction_usd"]),
+            experiment_report(data)["list_rate_estimates"]["known_subtotal_usd"],
+        )
+
+    def test_price_unit_must_be_explicit_and_recognized(self):
+        self.assertEqual(rate_per_million("42", "million"), Decimal("42"))
+        with self.assertRaisesRegex(ValueError, "published_token_unit"):
+            rate_per_million("42", "tokens")
 
     def test_every_receipt_reservation_is_reconciled_with_an_explicit_state(self):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
@@ -211,10 +251,13 @@ class CostAccountingTests(unittest.TestCase):
                          Decimal("0.308076"))
         self.assertIsNone(result["indexed"]["complete_total_usd"])
         self.assertIsNone(result["uncached_to_indexed_before_unknown_costs_ratio"])
+        # No explicit cache was created, but missing implicit-cache usage is not zero.
+        self.assertIsNone(result["cache_hit_rate"])
+        self.assertIsNone(result["cache_policy_baseline"]["complete_total_usd"])
 
     def test_cap_rejects_estimates_plus_reservations_above_limit(self):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
-        data["cumulative_cap_usd"] = "1.04309934"
+        data["cumulative_cap_usd"] = "0.902456133"
         with self.assertRaisesRegex(ValueError, "exceed cumulative cap"):
             experiment_report(data)
 

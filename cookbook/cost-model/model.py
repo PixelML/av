@@ -32,6 +32,14 @@ def fraction(value, label: str) -> Decimal:
     return result
 
 
+def rate_per_million(published_usd, published_token_unit: str) -> Decimal:
+    """Normalize a published token-price unit without silently assuming millions."""
+    denominators = {"million": Decimal("1000000"), "billion": Decimal("1000000000")}
+    if published_token_unit not in denominators:
+        raise ValueError("published_token_unit must be million or billion")
+    return number(published_usd, "published rate") * Decimal("1000000") / denominators[published_token_unit]
+
+
 def token_cost(input_tokens, output_tokens, input_usd_per_million, output_usd_per_million):
     """Return an estimated dollar amount; unreported usage remains unknown."""
     if any(v is None for v in (input_tokens, output_tokens, input_usd_per_million, output_usd_per_million)):

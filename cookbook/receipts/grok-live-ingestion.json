@@ -55,5 +55,6 @@
     "maximum_completion_tokens": 235,
     "proxy_billed_usd_unknown": true,
     "infrastructure_storage_network_unpriced": true
-  }
+  },
+  "wall_seconds_scope": "Measured AV ingestion run using already extracted frames and an existing transcript sidecar; excludes prior frame extraction and external ASR. Not end-to-end ingestion latency."
 }

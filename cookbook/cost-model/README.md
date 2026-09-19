@@ -30,9 +30,10 @@ The evidence now includes one completed Jev-refined query in addition to the ear
 | Fresh 300-frame ingestion attempt at `e24845d` | local media probe timed out before frame extraction; 75 transcript artifacts, 0 captions, 0 provider requests | $0 |
 | Completed 300-frame Grok ingestion at `dd9dfa2` | 300/300 requests succeeded; 300 captions and 75 transcript windows persisted; six responses exceeded the requested 200-token advisory cap (maximum 235) | $0.5048525 |
 | Completed Grok-only legacy query at `dd9dfa2` | correct answer with transcript citation `1140–1200s`; evidence remained raw/unjudged | $0.0015481 |
-| Jev comparison arm | blocked before request because no configured `AV_TYPESAFE_API_KEY` credential was available | $0 |
+| Earlier Jev comparison attempt | blocked before request because no configured `AV_TYPESAFE_API_KEY` credential was available | $0 |
+| Completed Jev-refined Grok query | two Jev requests plus one Grok answer; corrected Jev units | $0.001797634 |
 
-Known token-derived list-rate estimates total **$1.04309935**. They are not billed
+Known token-derived list-rate estimates total **$0.902456134**. They are not billed
 dollars. Provider/account or proxy billing remains unknown. Compute, storage, and
 network allocation also remains unknown.
 
@@ -42,7 +43,25 @@ reservations were released after their later metered responses. The **$0.90**
 caption-ingestion and **$0.20** query/judge/answer reservations were released
 unused when the restored-route cap gate failed. A later **$0.90** ingestion
 reservation was released after all 300 caption responses reported usage. A
-later **$0.20** reservation was released after the Jev-refined query reported complete usage. No reservation remains retained. Known estimates plus retained reservations are therefore **$1.04309935**, leaving **$3.95690065** of estimate headroom.
+later **$0.20** reservation was released after the Jev-refined query reported complete usage. No reservation remains retained. Known estimates plus retained reservations are therefore **$0.902456134**, leaving **$4.097543866** of estimate headroom.
+
+### Pricing correction — 2026-09-19
+
+The original observer treated TypeSafe's **$42 per billion input tokens** as
+$42 per million. The [official model documentation](https://docs.typesafe.ai/models.md)
+lists **$0.042 per million input tokens and free output**. The corrected Jev
+estimate is `(1,888 + 1,464) × $42 / 1,000,000,000 = $0.000140784`.
+Adding the unchanged Grok answer estimate of $0.00165685 yields **$0.001797634**
+for this query's metered model calls. The earlier query estimate was $0.14244085;
+the $0.140643216 correction reduces the cumulative experiment estimate from
+$1.04309935 to $0.902456134.
+
+The [query receipt](../receipts/jev-refined-query.json) retains the original
+derived values, published rate and unit, source URL, and dated correction. Raw
+provider responses, measured token counts, returned answer, and timings were not
+changed. These remain list-price estimates, not verified billed spend. The
+offline regression derives the rate from the published billion-token unit and
+recomputes each stage and its ledger entry, including free output.
 
 One completed Jev-refined query exists. It used 300 sampled frames plus a coarse
 transcript sidecar, made two Jev requests (relevance and support) and one Grok
@@ -50,6 +69,10 @@ answer request, and returned supported `1140–1200s` evidence. Its 3.7385-secon
 query wall time is a single question, not an all-in AV-versus-Gemini latency
 comparison, and no aggregate quality-parity or savings claim is valid from it.
 The Gemini baseline used native video/audio at its recorded sampling configuration.
+No explicit Gemini cache was created, but implicit cached usage was not reported;
+the full-rate estimate does not establish a measured cache miss. The 902.905-second
+ingestion timer excludes prior frame extraction and external ASR, so it is not
+end-to-end ingestion latency.
 Six caption responses also exceeded the requested 200-token advisory cap; output
 caps are therefore not an enforced guarantee on this route. Provider billing and
 compute, storage, and network costs remain unknown.

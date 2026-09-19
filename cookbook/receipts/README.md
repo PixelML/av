@@ -22,4 +22,9 @@ because those fields are needed to interpret the recorded result.
 | [jev-credential-blocked.json](jev-credential-blocked.json) | Jev arm stopped before request because `AV_TYPESAFE_API_KEY` was absent |
 | [jev-refined-query.json](jev-refined-query.json) | Completed Jev-refined Grok answer at `59a7f73`: 2 Jev requests + 1 Grok answer, no retries/fallbacks, supported evidence |
 
+The Jev-refined receipt labels its factual answer text as an excerpt and records
+the 2026-09-19 pricing-unit correction with original derived values and official
+rate provenance. Raw provider measurements were preserved. The ingestion timer
+excludes prior frame extraction and external ASR.
+
 The receipts are evidence for those individual attempts only. The later Jev-refined query completed the intended AV Grok+Jev path for one question. These receipts do not establish aggregate speed, cost, or quality parity between the direct-video baseline and an AV pipeline.
