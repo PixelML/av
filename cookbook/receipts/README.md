@@ -16,6 +16,7 @@ because those fields are needed to interpret the recorded result.
 | [cap-probe-32-incompatible.json](cap-probe-32-incompatible.json) | 32-token cap probe blocked by HTTP 502/no available route; usage unknown |
 | [cap-probe-32-direct-incompatible.json](cap-probe-32-direct-incompatible.json) | Direct exact-model 32-token cap probe returned usage but produced 309 completion tokens; output cap ignored |
 | [cap-probe-32-restored-incompatible.json](cap-probe-32-restored-incompatible.json) | Restored-route exact-model probe at commit `6a1cde2` produced 260 completion tokens against cap 32; ingestion/query stopped |
+| [live-ingestion-local-probe-timeout.json](live-ingestion-local-probe-timeout.json) | Fresh 300-frame attempt at commit `e24845d` stopped locally before provider request 1; transcript imported, 0 captions persisted, $0 provider estimate |
 
 The receipts are evidence for those individual attempts only. No completed AV
 Grok+Jev comparison exists yet. They do not establish speed, cost, or quality

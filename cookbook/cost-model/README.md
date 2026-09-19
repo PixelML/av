@@ -27,25 +27,29 @@ The evidence is partial:
 | 32-token caption cap probe through the first configured route | HTTP 502/no route; usage unknown |
 | Direct 32-token caption cap probe | exact model returned 309 completion tokens against requested cap 32 | $0.0020309 |
 | Restored-route 32-token caption cap probe at `6a1cde2` | exact model returned 260 completion tokens against requested cap 32 | $0.0009004 |
+| Fresh 300-frame ingestion attempt at `e24845d` | local media probe timed out before frame extraction; 75 transcript artifacts, 0 captions, 0 provider requests | $0 |
 
 Known token-derived list-rate estimates total **$0.3942579**. They are not billed
 dollars. Provider/account or proxy billing remains unknown. Compute, storage, and
 network allocation also remains unknown.
 
 The cumulative experiment cap is **$5**. The reservation ledger records
-**$3.99945825** of historical request ceilings. The two **$0.01** probe
+**$4.89945825** of historical request ceilings. The two **$0.01** probe
 reservations were released after their later metered responses. The **$0.90**
 caption-ingestion and **$0.20** query/judge/answer reservations were released
-unused when the restored-route cap gate failed. No reservation remains retained.
+unused when the restored-route cap gate failed. A fresh **$0.90** ingestion
+reservation was later retained for the authorized 300-frame attempt and released
+unused after the local media probe timed out before provider request 1. No
+reservation remains retained.
 Known estimates plus retained reservations are therefore **$0.3942579**, leaving
 **$4.6057421** of estimate headroom.
 
 **No completed AV Grok+Jev comparison exists yet.** The receipts do not establish
 speed, cost, or quality parity with the Gemini 3.8 baseline. The baseline used
 native video/audio at its recorded sampling configuration; the incomplete AV arm
-is not an equal-input comparison. The restored route did not make the selected
-output-cap field enforceable, so the guard stopped before the 300-frame ingestion
-and before the exact benchmark question.
+is not an equal-input comparison. The later fresh attempt also did not reach the
+provider: local frame-extraction preflight stopped before request 1, and the exact
+benchmark question was not run against incomplete evidence.
 
 Use [`scenario.pending.json`](scenario.pending.json) as a blank template for
 another run.

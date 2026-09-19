@@ -4,7 +4,7 @@
     "status": "partial_reproduction",
     "implementation": "av",
     "receipt_directory": "../receipts",
-    "note": "Completed ASR and direct-video baseline receipts exist. Two exact-model 32-token compatibility probes completed with usage, including a restored-route retry at AV commit 6a1cde2, but both ignored the requested output cap. No paid ingestion/query followed the latest failure and no completed AV Grok+Jev comparison exists yet.",
+    "note": "Completed ASR and direct-video baseline receipts exist. Two exact-model 32-token compatibility probes completed with usage but ignored the requested output cap. A later fresh attempt at AV commit e24845d imported the transcript, then stopped on a local media-probe timeout before frame extraction with zero provider requests. No completed AV Grok+Jev comparison exists yet.",
     "projection": "Repeated-query totals are projections from entered stage costs, not additional measured runs."
   },
   "indexing": [
@@ -170,6 +170,17 @@
       "outcome": "incompatible",
       "receipt": "../receipts/cap-probe-32-restored-incompatible.json",
       "note": "Restored route returned the exact model and complete usage but ignored requested max_completion_tokens=32."
+    },
+    {
+      "name": "live_ingestion_local_probe_timeout",
+      "requests": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "thinking_tokens": null,
+      "cached_tokens": null,
+      "outcome": "blocked_before_provider_request",
+      "receipt": "../receipts/live-ingestion-local-probe-timeout.json",
+      "note": "The completed transcript imported, but a local media probe timed out before 300-frame extraction; no provider request was attempted."
     }
   ],
   "experiment_spend": [
@@ -242,6 +253,15 @@
       "receipt": "../receipts/cap-probe-32-restored-incompatible.json",
       "usage_ref": "restored_route_max_completion_tokens_cap_probe",
       "note": "Cache-aware upstream list-rate estimate; the restored route returned 260 completion tokens despite requested cap 32."
+    },
+    {
+      "name": "live_ingestion_local_probe_timeout",
+      "usd": 0,
+      "basis": "not_used",
+      "category": "failed_attempt",
+      "outcome": "blocked_before_provider_request",
+      "receipt": "../receipts/live-ingestion-local-probe-timeout.json",
+      "note": "No provider request was attempted; local compute, storage, and network allocation remain unknown."
     }
   ],
   "unknown_costs": [
@@ -302,6 +322,13 @@
       "status": "released_after_metering",
       "receipt": "../receipts/cap-probe-32-restored-incompatible.json",
       "note": "Fresh restored-route ceiling released after the one authorized request returned complete usage."
+    },
+    {
+      "name": "fresh_live_caption_ingest",
+      "usd": "0.90",
+      "status": "superseded",
+      "receipt": "../receipts/live-ingestion-local-probe-timeout.json",
+      "note": "Released unused after local frame-extraction preflight timed out before provider request 1."
     }
   ],
   "cumulative_cap_usd": "5"
