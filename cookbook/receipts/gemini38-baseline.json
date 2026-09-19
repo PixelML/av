@@ -12,7 +12,7 @@
   "model_requested": "gemini-3.8-flash",
   "model_returned": "gemini-3.8-flash",
   "question": "What percentage did manufacturing expand by in the second quarter and what drove it?",
-  "answer": "Manufacturing expanded by 12.2% in the second quarter, driven largely by AI-related demand for electronics and precision engineering (19:51–20:00).",
+  "answer": "Manufacturing expanded by 12.2% in the second quarter, driven largely by AI-related demand for electronics and precision engineering (19:51\u201320:00).",
   "sampling": {
     "fps": 1.0,
     "media_resolution": "low",
@@ -49,9 +49,11 @@
   },
   "limitations": {
     "answer_quality_reviewed": false,
-    "paired_av_grok_jev_run_completed": false,
+    "paired_av_grok_jev_run_completed": true,
     "speed_cost_or_quality_parity_claimed": false,
-    "missing_usage_policy": "Absent fields remain unknown; no absent field is treated as measured zero."
+    "missing_usage_policy": "Absent fields remain unknown; no absent field is treated as measured zero.",
+    "paired_av_grok_jev_run_receipt": "../receipts/jev-refined-query.json",
+    "paired_av_grok_jev_limit": "One unchanged question only; no aggregate quality, speed, or all-in cost claim."
   },
   "private_upload_uri_included": false,
   "credentials_included": false

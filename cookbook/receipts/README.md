@@ -20,8 +20,6 @@ because those fields are needed to interpret the recorded result.
 | [grok-live-ingestion.json](grok-live-ingestion.json) | Completed 300-frame Grok ingestion at `dd9dfa2`; six responses exceeded the requested 200-token advisory cap |
 | [grok-legacy-query.json](grok-legacy-query.json) | Completed single Grok-only answer with transcript citation; no Jev relevance/support request |
 | [jev-credential-blocked.json](jev-credential-blocked.json) | Jev arm stopped before request because `AV_TYPESAFE_API_KEY` was absent |
+| [jev-refined-query.json](jev-refined-query.json) | Completed Jev-refined Grok answer at `59a7f73`: 2 Jev requests + 1 Grok answer, no retries/fallbacks, supported evidence |
 
-The receipts are evidence for those individual attempts only. The completed query
-was Grok-only through AV’s legacy route. No completed AV Grok+Jev comparison
-exists. They do not establish speed, cost, or quality
-parity between the direct-video baseline and an AV pipeline.
+The receipts are evidence for those individual attempts only. The later Jev-refined query completed the intended AV Grok+Jev path for one question. These receipts do not establish aggregate speed, cost, or quality parity between the direct-video baseline and an AV pipeline.

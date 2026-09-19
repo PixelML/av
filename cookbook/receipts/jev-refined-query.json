@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "stage": "jev_refined_query",
+  "status": "complete",
+  "runtime_commit": "59a7f7317329e4bba6e1b43cdf289a233e865a75",
+  "question": "What percentage did manufacturing expand by in the second quarter and what drove it?",
+  "answer": "Manufacturing expanded by 12.2% in the second quarter. It was driven largely by AI-related demand for electronics and precision engineering.",
+  "citations": [
+    {
+      "start_sec": 1140.0,
+      "end_sec": 1200.0,
+      "source_type": "transcript"
+    }
+  ],
+  "route": "refined",
+  "evidence_status": "supported",
+  "confidence": 0.95,
+  "confidence_basis": "jev_answer_support",
+  "refinement": {
+    "status": "success",
+    "raw_count": 5,
+    "dropped_count": 4,
+    "merged_count": 0,
+    "capped_count": 0,
+    "scene_count": 1,
+    "video_count": 1,
+    "relevance_min": 0.5
+  },
+  "wall_seconds": 3.7385285390446192,
+  "request_counts": {
+    "provider_requests": 1,
+    "jev_requests": 2,
+    "automatic_retries": 0,
+    "fallbacks": 0
+  },
+  "models": {
+    "relevance_and_support": "jev-latest",
+    "answer": "grok-4.20-0309-non-reasoning"
+  },
+  "model_returned": {
+    "answer": "grok-4.20-0309-non-reasoning"
+  },
+  "stage_usage": {
+    "relevance": {
+      "requests": 1,
+      "input_tokens": 1888,
+      "output_tokens": 89,
+      "estimated_usd": "0.079296"
+    },
+    "boundary": {
+      "requests": 0,
+      "input_tokens": null,
+      "output_tokens": null
+    },
+    "answer": {
+      "requests": 1,
+      "input_tokens": 1181,
+      "cached_input_tokens": 128,
+      "output_tokens": 126,
+      "estimated_usd": "0.00165685"
+    },
+    "support": {
+      "requests": 1,
+      "input_tokens": 1464,
+      "output_tokens": 21,
+      "estimated_usd": "0.061488"
+    },
+    "vision": {
+      "requests": 0,
+      "input_tokens": null,
+      "output_tokens": null
+    }
+  },
+  "cache_aware_list_estimate_usd": "0.14244085",
+  "usage_complete": true,
+  "known_cumulative_list_estimate_usd": "1.04309935",
+  "cumulative_cap_usd": "5",
+  "proxy_billed_usd": null,
+  "basis": "estimated from measured usage and recorded upstream list rates",
+  "reservation": {
+    "name": "query_judge_and_answer_jev",
+    "reserved_usd": "0.20",
+    "status": "released_after_metering"
+  },
+  "limitations": {
+    "single_question_no_aggregate_quality_claim": true,
+    "query_latency_is_not_a_complete_av_vs_gemini_comparison": true,
+    "jev_returned_model_identifier_unavailable": true,
+    "proxy_billed_usd_unknown": true,
+    "infrastructure_storage_network_unpriced": true
+  }
+}

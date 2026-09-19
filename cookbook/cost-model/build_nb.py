@@ -16,8 +16,8 @@ CELLS = [
     ("markdown", """# AV stage-cost model (offline)
 
 This notebook calculates with the same model.py used by the command line.
-The checked-in receipt scenario includes completed ASR and direct-video baseline
-attempts, but no completed AV Grok+Jev comparison. Measured tokens, list-rate
+The checked-in receipt scenario includes completed ASR, direct-video baseline,
+ingestion, and one Jev-refined query attempt. Measured tokens, list-rate
 estimates, unknown costs, failures, and reservation states remain separate. Only
 retained reservations count against current cap headroom; released and superseded
 ceilings remain visible as history. See README.md for provenance and limitations.
@@ -53,7 +53,7 @@ Indexing is charged once. Retrieval, judge, answer, and optional stronger
 inspection are multiplied by query volume. Hosting and storage refer to the
 same observation period. A complete modeled total can contain assumptions; it
 is not necessarily a measured bill. This receipt scenario remains incomplete
-because no completed AV Grok+Jev query exists. Repeated-query projections are
+because it remains a single-question experiment. Repeated-query projections are
 not new benchmark measurements.
 """),
     ("code", """for queries in (1, 100, 1000):

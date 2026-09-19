@@ -100,24 +100,25 @@ class CostAccountingTests(unittest.TestCase):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
         report = experiment_report(data)
         self.assertEqual(report["list_rate_estimates"]["known_subtotal_usd"],
-                         Decimal("0.9006585"))
-        self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("5.99945825"))
+                         Decimal("1.04309935"))
+        self.assertEqual(report["reservations"]["total_recorded_usd"], Decimal("6.19945825"))
         self.assertEqual(report["reservations"]["total_retained_usd"], Decimal("0"))
         self.assertEqual(
             report["reservations"]["status_totals_usd"]["released_after_metering"],
-            Decimal("3.99945825"),
+            Decimal("4.19945825"),
         )
         self.assertEqual(report["reservations"]["status_totals_usd"]["superseded"], Decimal("2.00"))
-        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("0.9006585"))
-        self.assertEqual(report["remaining_cap_usd"], Decimal("4.0993415"))
+        self.assertEqual(report["known_estimates_plus_retained_usd"], Decimal("1.04309935"))
+        self.assertEqual(report["remaining_cap_usd"], Decimal("3.95690065"))
         self.assertIsNone(report["unknown_costs"]["complete_total_usd"])
         self.assertEqual(
             [item["outcome"] for item in report["failures"]],
             ["failed", "aborted", "incompatible", "incompatible"],
         )
         self.assertEqual(report["measured_usage"][0]["input_tokens"], 118228)
-        self.assertEqual(report["measured_usage"][-1]["outcome"], "blocked_before_request")
-        self.assertEqual(report["measured_usage"][-1]["requests"], 0)
+        self.assertEqual(report["measured_usage"][-1]["name"], "jev_refined_query")
+        self.assertEqual(report["measured_usage"][-1]["outcome"], "completed")
+        self.assertEqual(report["measured_usage"][-1]["requests"], 3)
 
     def test_sanitized_receipts_are_present_and_baseline_estimate_recomputes(self):
         required = {
@@ -132,6 +133,7 @@ class CostAccountingTests(unittest.TestCase):
             "grok-live-ingestion.json",
             "grok-legacy-query.json",
             "jev-credential-blocked.json",
+            "jev-refined-query.json",
         }
         self.assertTrue(required.issubset({path.name for path in RECEIPTS.glob("*.json")}))
         receipt = json.loads((RECEIPTS / "gemini38-baseline.json").read_text())
@@ -147,7 +149,11 @@ class CostAccountingTests(unittest.TestCase):
             Decimal(str(receipt["cost"]["full_rate_list_estimate_usd"])),
             recomputed,
         )
-        self.assertFalse(receipt["limitations"]["paired_av_grok_jev_run_completed"])
+        self.assertTrue(receipt["limitations"]["paired_av_grok_jev_run_completed"])
+        self.assertEqual(
+            receipt["limitations"]["paired_av_grok_jev_run_receipt"],
+            "../receipts/jev-refined-query.json",
+        )
 
     def test_every_receipt_reservation_is_reconciled_with_an_explicit_state(self):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
@@ -161,6 +167,7 @@ class CostAccountingTests(unittest.TestCase):
             ("../receipts/gemini38-baseline.json", "cost.worst_case_reserved_list_estimate_usd"),
             ("../receipts/grok-live-ingestion.json", "reservation.reserved_usd"),
             ("../receipts/grok-legacy-query.json", "reservation.reserved_usd"),
+            ("../receipts/jev-refined-query.json", "reservation.reserved_usd"),
         }
         for key in expected:
             with self.subTest(receipt=key[0], field=key[1]):
@@ -207,7 +214,7 @@ class CostAccountingTests(unittest.TestCase):
 
     def test_cap_rejects_estimates_plus_reservations_above_limit(self):
         data = json.loads((HERE / "scenario.receipts.json").read_text())
-        data["cumulative_cap_usd"] = "0.9006584"
+        data["cumulative_cap_usd"] = "1.04309934"
         with self.assertRaisesRegex(ValueError, "exceed cumulative cap"):
             experiment_report(data)
 

@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "experiment": {
-    "status": "partial_reproduction_grok_only",
+    "status": "completed_grok_jev_single_question",
     "implementation": "av",
     "receipt_directory": "../receipts",
-    "note": "Completed external ASR, 300-frame Grok ingestion, and one Grok-only legacy query receipts exist. No Jev request ran because no configured AV_TYPESAFE_API_KEY credential was available, so no completed AV Grok+Jev comparison or quality-parity claim exists.",
+    "note": "Completed external ASR, 300-frame Grok ingestion, one Grok-only legacy query, and one Jev-refined Grok answer receipt exist. This is a single-question comparison, not an aggregate quality claim.",
     "projection": "Repeated-query totals are projections from entered stage costs, not additional measured runs."
   },
   "indexing": [
@@ -37,24 +37,24 @@
     "retrieval": {
       "usd": 0,
       "basis": "not_used",
-      "note": "The recorded Grok-only query used local FTS retrieval with embeddings disabled; provider model cost was zero and local compute remains unpriced."
+      "note": "The completed Jev-refined query used local FTS retrieval with embeddings disabled; local compute remains unpriced."
     },
     "judge": {
-      "usd": 0,
-      "basis": "not_used",
-      "note": "No Jev request ran because the required credential was absent; zero is not a measured Jev cost."
+      "usd": "0.140784",
+      "basis": "estimated",
+      "note": "Two completed Jev requests: relevance and support. Measured input/output token usage multiplied by recorded list rates; billed dollars are unknown."
     },
     "answer": {
-      "usd": "0.0015481",
+      "usd": "0.00165685",
       "basis": "estimated",
-      "note": "One Grok-only answer request with complete measured usage; billed dollars are unknown."
+      "note": "One Grok answer request with complete measured usage, including 128 cached prompt tokens; billed dollars are unknown."
     },
     "stronger_fallback": {
       "frequency": 0,
       "per_invocation": {
         "usd": 0,
         "basis": "not_used",
-        "note": "No completed stronger-inspection query exists."
+        "note": "No stronger-inspection request ran."
       }
     }
   },
@@ -202,7 +202,7 @@
       "cached_tokens": 128,
       "outcome": "completed_grok_only",
       "receipt": "../receipts/grok-legacy-query.json",
-      "note": "Correct answer with transcript citation; evidence remained raw and unjudged because no Jev request ran."
+      "note": "Correct answer with transcript citation through the legacy route; retained separately from the later Jev-refined run."
     },
     {
       "name": "jev_credential_blocker",
@@ -214,6 +214,17 @@
       "outcome": "blocked_before_request",
       "receipt": "../receipts/jev-credential-blocked.json",
       "note": "No configured AV_TYPESAFE_API_KEY credential was available."
+    },
+    {
+      "name": "jev_refined_query",
+      "requests": 3,
+      "input_tokens": 4533,
+      "output_tokens": 236,
+      "thinking_tokens": 0,
+      "cached_tokens": 128,
+      "outcome": "completed",
+      "receipt": "../receipts/jev-refined-query.json",
+      "note": "Two Jev requests (relevance and support) plus one Grok answer request; complete usage was returned for each stage."
     }
   ],
   "experiment_spend": [
@@ -314,7 +325,7 @@
       "outcome": "completed_grok_only",
       "receipt": "../receipts/grok-legacy-query.json",
       "usage_ref": "grok_legacy_query",
-      "note": "Cache-aware upstream list-rate estimate for the answer request; no Jev request ran."
+      "note": "Cache-aware upstream list-rate estimate for the earlier Grok-only answer request; retained as a separate experiment attempt."
     },
     {
       "name": "jev_credential_blocker",
@@ -324,6 +335,16 @@
       "outcome": "blocked_before_request",
       "receipt": "../receipts/jev-credential-blocked.json",
       "note": "No provider request was attempted because the required credential was absent."
+    },
+    {
+      "name": "jev_refined_query",
+      "usd": "0.14244085",
+      "basis": "estimated",
+      "category": "av_grok_jev_query",
+      "outcome": "completed",
+      "receipt": "../receipts/jev-refined-query.json",
+      "usage_ref": "jev_refined_query",
+      "note": "Cache-aware upstream list-rate estimate for two Jev requests and one Grok answer request; no retry or fallback occurred."
     }
   ],
   "unknown_costs": [
@@ -407,6 +428,14 @@
       "receipt": "../receipts/grok-legacy-query.json",
       "receipt_field": "reservation.reserved_usd",
       "note": "Released after the Grok answer returned complete usage; the Jev arm remained blocked with zero requests and no balance retained."
+    },
+    {
+      "name": "jev_refined_query_judge_and_answer",
+      "usd": "0.20",
+      "status": "released_after_metering",
+      "receipt": "../receipts/jev-refined-query.json",
+      "receipt_field": "reservation.reserved_usd",
+      "note": "Released after two Jev requests and one Grok answer returned complete usage."
     }
   ],
   "cumulative_cap_usd": "5"

@@ -193,9 +193,10 @@ receipt. No benchmark in this recipe establishes quality improvement, parity
 with direct-video models, or a universal cost ratio.
 
 The current receipts include completed ASR and Gemini 3.8 baseline calls, an
-aborted caption attempt, a successful image smoke call, one no-route probe, and
-two exact-model probes that returned 309 and 260 completion tokens against a
-requested cap of 32. The latest probe ran at AV commit `6a1cde2`, with automatic
-retries and hidden fallbacks disabled. **No paid ingestion or query followed,
-and no completed AV Grok+Jev comparison exists yet.** Do not claim speed, cost,
-or quality parity from these component attempts.
+aborted caption attempt, a successful image smoke call, two exact-model probes
+that ignored a requested 32-token cap, a completed 300-frame Grok ingestion, and
+a completed Jev-refined query. The refined query made two Jev requests
+(relevance and support) plus one Grok answer request, used the same transcript
+support window, and reported complete usage for each stage. It is still one
+question: do not claim aggregate quality, total savings, or an all-in speed or
+cost advantage from it.
