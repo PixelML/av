@@ -30,7 +30,7 @@ from av.utils.principles import load_principles
 def _dense_caption_template_path() -> Path:
     current = Path(__file__).resolve()
     candidates = (
-        current.parents[2] / "prompts" / "dense_caption.md",
+        current.parents[1] / "prompts" / "dense_caption.md",
         current.parents[3] / "prompts" / "dense_caption.md",
     )
     return next((candidate for candidate in candidates if candidate.is_file()), candidates[-1])

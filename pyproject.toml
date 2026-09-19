@@ -38,7 +38,7 @@ build-backend = "hatchling.build"
 packages = ["src/av"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"prompts/dense_caption.md" = "prompts/dense_caption.md"
+"prompts/dense_caption.md" = "av/prompts/dense_caption.md"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -46,6 +46,7 @@ include = [
     "/tests",
     "/cookbook",
     "/prompts",
+    "/skills",
     "/README.md",
     "/LICENSE",
     "/pyproject.toml",
