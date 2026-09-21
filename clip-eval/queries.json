@@ -1,0 +1,117 @@
+{
+  "contract_version": 1,
+  "role": "dev",
+  "queries": [
+    {
+      "query_id": "q-001",
+      "topic": "quantum error correction",
+      "video_id": "av-clip-eval-talk-001",
+      "expected": "present",
+      "moments": [
+        {
+          "moment_id": "m-101",
+          "start_sec": 24.0,
+          "end_sec": 58.0,
+          "appeal": 0.85,
+          "requires_setup": true,
+          "setup_start_sec": 24.0,
+          "setup_end_sec": 34.0,
+          "note": "setup then payoff; repeated topic"
+        },
+        {
+          "moment_id": "m-102",
+          "start_sec": 88.0,
+          "end_sec": 112.0,
+          "appeal": 0.85,
+          "requires_setup": true,
+          "setup_start_sec": 88.0,
+          "setup_end_sec": 100.0,
+          "note": "second occurrence; non-overlap matters"
+        }
+      ]
+    },
+    {
+      "query_id": "q-002",
+      "topic": "cloud credits",
+      "video_id": "av-clip-eval-talk-001",
+      "expected": "absent",
+      "moments": [],
+      "note": "incidental sponsor mention at 58-66; not a discussion of the topic"
+    },
+    {
+      "query_id": "q-003",
+      "topic": "stock market predictions",
+      "video_id": "av-clip-eval-talk-001",
+      "expected": "absent",
+      "moments": []
+    },
+    {
+      "query_id": "q-004",
+      "topic": "sourdough starter schedule",
+      "video_id": "av-clip-eval-podcast-001",
+      "expected": "present",
+      "moments": [
+        {
+          "moment_id": "m-201",
+          "start_sec": 20.0,
+          "end_sec": 42.0,
+          "appeal": 0.8,
+          "requires_setup": false,
+          "note": "noisy ASR: 'sourdough' appears as 'sower dough'"
+        }
+      ],
+      "note": "retrieval must survive ASR noise"
+    },
+    {
+      "query_id": "q-005",
+      "topic": "laminating trick",
+      "video_id": "av-clip-eval-podcast-001",
+      "expected": "present",
+      "moments": [
+        {
+          "moment_id": "m-202",
+          "start_sec": 58.0,
+          "end_sec": 90.0,
+          "appeal": 0.9,
+          "requires_setup": true,
+          "setup_start_sec": 58.0,
+          "setup_end_sec": 82.0,
+          "note": "context-dependent soundbite; payoff at 82-90 needs the setup (hard_context: payoff alone is incoherent)",
+          "hard_context": true
+        }
+      ],
+      "note": "clipping only the payoff loses the setup"
+    },
+    {
+      "query_id": "q-006",
+      "topic": "electric car reviews",
+      "video_id": "av-clip-eval-podcast-001",
+      "expected": "absent",
+      "moments": []
+    },
+    {
+      "query_id": "q-007",
+      "topic": "harbor fish auction",
+      "video_id": "av-clip-eval-harbor-001",
+      "expected": "present",
+      "moments": [
+        {
+          "moment_id": "m-301",
+          "start_sec": 30.0,
+          "end_sec": 52.0,
+          "appeal": 0.75,
+          "requires_setup": false,
+          "note": "no vision captions cover this moment; visual support is unavailable, not contradictory"
+        }
+      ],
+      "note": "missing vision over the moment"
+    },
+    {
+      "query_id": "q-008",
+      "topic": "space launch",
+      "video_id": "av-clip-eval-harbor-001",
+      "expected": "absent",
+      "moments": []
+    }
+  ]
+}

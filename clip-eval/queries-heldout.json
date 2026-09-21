@@ -1,0 +1,62 @@
+{
+  "contract_version": 1,
+  "role": "heldout",
+  "policy": "Run at most once per evidence cycle and never against prompt or threshold iteration. Labels here were frozen before any clip run on them.",
+  "queries": [
+    {
+      "query_id": "q-h01",
+      "topic": "kouign aman pastry",
+      "video_id": "av-clip-eval-podcast-001",
+      "expected": "present",
+      "moments": [
+        {
+          "moment_id": "m-h01",
+          "start_sec": 42.0,
+          "end_sec": 58.0,
+          "appeal": 0.7,
+          "requires_setup": false,
+          "note": "ASR renders 'kouign aman' as 'queen aman'"
+        }
+      ]
+    },
+    {
+      "query_id": "q-h02",
+      "topic": "code distance",
+      "video_id": "av-clip-eval-talk-001",
+      "expected": "present",
+      "moments": [
+        {
+          "moment_id": "m-h02",
+          "start_sec": 88.0,
+          "end_sec": 100.0,
+          "appeal": 0.6,
+          "requires_setup": false
+        }
+      ]
+    },
+    {
+      "query_id": "q-h03",
+      "topic": "night market openings",
+      "video_id": "av-clip-eval-harbor-001",
+      "expected": "present",
+      "moments": [
+        {
+          "moment_id": "m-h03",
+          "start_sec": 8.0,
+          "end_sec": 24.0,
+          "appeal": 0.6,
+          "requires_setup": false,
+          "note": "one caption contradicts the transcript by claiming daytime"
+        }
+      ],
+      "note": "contradictory vision must not silently invalidate the moment"
+    },
+    {
+      "query_id": "q-h04",
+      "topic": "submarine tour",
+      "video_id": "av-clip-eval-harbor-001",
+      "expected": "absent",
+      "moments": []
+    }
+  ]
+}

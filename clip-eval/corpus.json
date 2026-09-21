@@ -1,0 +1,315 @@
+{
+  "contract_version": 1,
+  "description": "Synthetic rights-cleared clip evaluation corpus. All text invented for this contract; media generated on demand by deterministic ffmpeg commands recorded in each content block. No real persons, events, or footage.",
+  "videos": [
+    {
+      "id": "av-clip-eval-talk-001",
+      "content": {
+        "style": "conference-talk",
+        "duration_sec": 140.0,
+        "transcript": [
+          {
+            "id": "talk-t01",
+            "start_sec": 0,
+            "end_sec": 8,
+            "text": "Welcome everyone, thanks for coming to the systems track."
+          },
+          {
+            "id": "talk-t02",
+            "start_sec": 8,
+            "end_sec": 16,
+            "text": "Today I want to talk about how we keep large deployments reliable."
+          },
+          {
+            "id": "talk-t03",
+            "start_sec": 16,
+            "end_sec": 24,
+            "text": "Let me start with a quick story from our own infrastructure."
+          },
+          {
+            "id": "talk-t04",
+            "start_sec": 24,
+            "end_sec": 34,
+            "text": "Quantum error correction sounds abstract, but think of it as backup batteries for qubits."
+          },
+          {
+            "id": "talk-t05",
+            "start_sec": 34,
+            "end_sec": 44,
+            "text": "When a qubit flips, the correction layer catches it and rewrites the state."
+          },
+          {
+            "id": "talk-t06",
+            "start_sec": 44,
+            "end_sec": 58,
+            "text": "We ran this on a live cluster, and the error rate collapsed by two orders of magnitude."
+          },
+          {
+            "id": "talk-t07",
+            "start_sec": 58,
+            "end_sec": 66,
+            "text": "Before questions, a short word from our sponsor about cloud credits."
+          },
+          {
+            "id": "talk-t08",
+            "start_sec": 66,
+            "end_sec": 78,
+            "text": "The grant committee wants monthly reports, and honestly the paperwork is heavy."
+          },
+          {
+            "id": "talk-t09",
+            "start_sec": 78,
+            "end_sec": 88,
+            "text": "Back to the technical track: redundancy alone is not resilience."
+          },
+          {
+            "id": "talk-t10",
+            "start_sec": 88,
+            "end_sec": 100,
+            "text": "Quantum error correction only works when the code distance grows with the noise."
+          },
+          {
+            "id": "talk-t11",
+            "start_sec": 100,
+            "end_sec": 112,
+            "text": "In our demo, three faulty gates in a row were still recovered cleanly."
+          },
+          {
+            "id": "talk-t12",
+            "start_sec": 112,
+            "end_sec": 122,
+            "text": "That recovery is the moment reliability stops being a promise."
+          },
+          {
+            "id": "talk-t13",
+            "start_sec": 122,
+            "end_sec": 132,
+            "text": "To sum up: measure, correct, and repeat."
+          },
+          {
+            "id": "talk-t14",
+            "start_sec": 132,
+            "end_sec": 140,
+            "text": "Thank you, and I will take questions at the booth."
+          }
+        ],
+        "vision": [
+          {
+            "id": "talk-c01",
+            "start_sec": 0,
+            "end_sec": 40,
+            "text": "Speaker on stage welcoming the audience, slides showing the conference logo",
+            "source_type": "dense_caption"
+          },
+          {
+            "id": "talk-c02",
+            "start_sec": 40,
+            "end_sec": 80,
+            "text": "Slide shows a lattice diagram; the speaker gestures at rising and falling error bars",
+            "source_type": "dense_caption"
+          },
+          {
+            "id": "talk-c03",
+            "start_sec": 80,
+            "end_sec": 120,
+            "text": "Slide shows a code distance chart; the speaker points at a flat line after correction",
+            "source_type": "dense_caption"
+          },
+          {
+            "id": "talk-c04",
+            "start_sec": 120,
+            "end_sec": 140,
+            "text": "Audience applauding; the speaker steps back from the podium",
+            "source_type": "dense_caption"
+          }
+        ],
+        "media": {
+          "filename": "av-clip-eval-talk-001.mp4",
+          "tone_hz": 440,
+          "approx_size_bytes": 450000
+        }
+      }
+    },
+    {
+      "id": "av-clip-eval-podcast-001",
+      "content": {
+        "style": "podcast-interview-noisy-asr",
+        "duration_sec": 130.0,
+        "transcript": [
+          {
+            "id": "pod-t01",
+            "start_sec": 0,
+            "end_sec": 10,
+            "text": "Welcome back to the show, today we are baking with a master baker."
+          },
+          {
+            "id": "pod-t02",
+            "start_sec": 10,
+            "end_sec": 20,
+            "text": "Let us talk about sower dough, the classic fermented bread."
+          },
+          {
+            "id": "pod-t03",
+            "start_sec": 20,
+            "end_sec": 30,
+            "text": "A good starter needs feeding every single day, no exceptions."
+          },
+          {
+            "id": "pod-t04",
+            "start_sec": 30,
+            "end_sec": 42,
+            "text": "If you skip a feeding, the starter turns acidic and the loaf collapses."
+          },
+          {
+            "id": "pod-t05",
+            "start_sec": 42,
+            "end_sec": 50,
+            "text": "And the queen aman? That pastry is pure butter architecture."
+          },
+          {
+            "id": "pod-t06",
+            "start_sec": 50,
+            "end_sec": 58,
+            "text": "Most people ruin it by rushing the folds, patience is everything."
+          },
+          {
+            "id": "pod-t07",
+            "start_sec": 58,
+            "end_sec": 70,
+            "text": "Let me tell you the part nobody tells you about lamination."
+          },
+          {
+            "id": "pod-t08",
+            "start_sec": 70,
+            "end_sec": 82,
+            "text": "Cold butter, patient folds, and two full rest hours."
+          },
+          {
+            "id": "pod-t09",
+            "start_sec": 82,
+            "end_sec": 90,
+            "text": "That is the trick, and it works every single time."
+          },
+          {
+            "id": "pod-t10",
+            "start_sec": 90,
+            "end_sec": 100,
+            "text": "Wow, I had no idea rest time mattered that much."
+          },
+          {
+            "id": "pod-t11",
+            "start_sec": 100,
+            "end_sec": 112,
+            "text": "So to recap: ferment slowly, laminate cold, bake hot."
+          },
+          {
+            "id": "pod-t12",
+            "start_sec": 112,
+            "end_sec": 130,
+            "text": "Thanks for listening, and send us your baking fails."
+          }
+        ],
+        "vision": [
+          {
+            "id": "pod-c01",
+            "start_sec": 0,
+            "end_sec": 44,
+            "text": "Two people at a kitchen counter; loaves and jars of starter are visible",
+            "source_type": "caption"
+          },
+          {
+            "id": "pod-c02",
+            "start_sec": 44,
+            "end_sec": 90,
+            "text": "Hosts folding dough on a floured counter; a butter block sits on the table",
+            "source_type": "caption"
+          },
+          {
+            "id": "pod-c03",
+            "start_sec": 90,
+            "end_sec": 130,
+            "text": "Hosts laughing; finished croissants cool on a rack",
+            "source_type": "caption"
+          }
+        ],
+        "media": {
+          "filename": "av-clip-eval-podcast-001.mp4",
+          "tone_hz": 523,
+          "approx_size_bytes": 420000
+        }
+      }
+    },
+    {
+      "id": "av-clip-eval-harbor-001",
+      "content": {
+        "style": "ambient-broll-documentary",
+        "duration_sec": 70.0,
+        "transcript": [
+          {
+            "id": "har-t01",
+            "start_sec": 8,
+            "end_sec": 16,
+            "text": "The night market at the harbor opens at sundown."
+          },
+          {
+            "id": "har-t02",
+            "start_sec": 16,
+            "end_sec": 24,
+            "text": "Stalls light up along the pier, and the smell of grilled fish takes over."
+          },
+          {
+            "id": "har-t03",
+            "start_sec": 30,
+            "end_sec": 44,
+            "text": "At dawn the fishing boats return, and the harbor auction begins."
+          },
+          {
+            "id": "har-t04",
+            "start_sec": 44,
+            "end_sec": 52,
+            "text": "Buyers crowd the slab, and the auction bell decides who takes the catch home."
+          },
+          {
+            "id": "har-t05",
+            "start_sec": 52,
+            "end_sec": 64,
+            "text": "By noon the pier is quiet again, waiting for the next tide."
+          }
+        ],
+        "vision": [
+          {
+            "id": "har-c01",
+            "start_sec": 0,
+            "end_sec": 20,
+            "text": "Empty pier at night, string lights over wet boards",
+            "source_type": "caption"
+          },
+          {
+            "id": "har-c02",
+            "start_sec": 12,
+            "end_sec": 18,
+            "text": "Daytime market stalls crowded with shoppers",
+            "source_type": "caption"
+          },
+          {
+            "id": "har-c03",
+            "start_sec": 64,
+            "end_sec": 70,
+            "text": "Wide shot of the harbor at noon",
+            "source_type": "caption"
+          }
+        ],
+        "media": {
+          "filename": "av-clip-eval-harbor-001.mp4",
+          "tone_hz": 349,
+          "approx_size_bytes": 240000
+        }
+      }
+    }
+  ],
+  "checksums": {
+    "av-clip-eval-talk-001": "sha256:d438002df93eacf18703cfca4a6794fb57fc46097310e918f585e953f6022c1f",
+    "av-clip-eval-podcast-001": "sha256:f5b9f0132415e34ed043ebe7cb43fed033c76faf6061dffbb44a5950a33a6b5e",
+    "av-clip-eval-harbor-001": "sha256:96a356e467220c60ff49255608eec93af948623d5956deca37139c40965573a3"
+  }
+}
