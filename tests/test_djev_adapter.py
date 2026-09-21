@@ -246,6 +246,14 @@ def test_success_without_served_identity_is_rejected(removed: str) -> None:
             ),
             "probabilities sum to",
         ),
+        (
+            lambda p, q: p["answers"]["bucket"].update(choice=[]),
+            "outside the offered options",
+        ),
+        (
+            lambda p, q: p["answers"]["bucket"].update(choice={}),
+            "outside the offered options",
+        ),
     ],
 )
 def test_malformed_responses_are_rejected_visibly(mutate, fragment) -> None:
@@ -256,7 +264,6 @@ def test_malformed_responses_are_rejected_visibly(mutate, fragment) -> None:
     with pytest.raises(RefinementError, match=fragment) as excinfo:
         _client(session).ask({}, questions)
     assert "djev-spark" in str(excinfo.value)
-
 
 def test_http_401_is_not_retried_and_names_the_provider() -> None:
     session = FakeSession(FakeResponse(status_code=401))

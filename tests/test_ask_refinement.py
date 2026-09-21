@@ -179,7 +179,7 @@ def test_boundary_window_is_single_pass_and_configurable(
     # Put the hit in the middle so ±6 has real room on both sides.
     raw[0] = repo.search_fts("scene 5", limit=1, video_id="v1")[0].model_dump()
     fake = FakeSystemOne([0.9], edge_boundaries=True)
-    refined, meta, _ = refine_search_results(
+    _refined, meta, _ = refine_search_results(
         "event",
         raw,
         repo,

@@ -215,7 +215,10 @@ class DjevClient:
     ) -> None:
         criteria = question.get("criteria")
         names = set(criteria) if isinstance(criteria, dict) else set()
-        if answer.get("choice") not in names:
+        # A set membership test raises TypeError on an unhashable value (a
+        # JSON array or object), so require a string before comparing.
+        choice = answer.get("choice")
+        if not isinstance(choice, str) or choice not in names:
             problems.append(f"{qid}: choice outside the offered options")
         probabilities = answer.get("probabilities")
         if not isinstance(probabilities, dict) or set(probabilities) != names:
