@@ -5,10 +5,10 @@ from __future__ import annotations
 from av.core.config import AVConfig
 from av.db.repository import Repository, _fmt_timestamp
 from av.providers.openai import OpenAILLM
+from av.search.djev import decision_provider_name, open_decision_client
 from av.search.inspection import inspect_with_stronger_vision
 from av.search.refine import (
     RefinementError,
-    SystemOneClient,
     judge_answer_support,
     refine_search_results,
 )
@@ -65,7 +65,15 @@ def _ask_settings(config: AVConfig) -> dict:
     return {
         "chat_model": config.chat_model,
         "chat_max_output_tokens": config.chat_max_output_tokens,
+        "decision_provider": decision_provider_name(config),
     }
+
+
+def _confidence_basis(decision_provider: str | None, stem: str) -> str:
+    """Name the lane that actually produced a confidence value: a djev-spark
+    decision is never reported under a Jev basis label."""
+    lane = "djev_spark" if decision_provider == "djev-spark" else "jev"
+    return f"{lane}_{stem}"
 
 
 def _llm_usage_snapshot(llm: OpenAILLM | None) -> dict:
@@ -167,7 +175,8 @@ def ask(
     )
 
     raw_results = search_result.get("results", [])
-    if not refine or not config.refine_enabled or not config.typesafe_api_key:
+    decision_provider = decision_provider_name(config)
+    if not refine or not config.refine_enabled or decision_provider is None:
         return _legacy_ask(
             question,
             raw_results,
@@ -192,23 +201,34 @@ def ask(
             "confidence_basis": "no_evidence",
             "route": "refined_no_results",
             "evidence_status": "no_retrieval_hits",
-            "refinement": {"status": "no_retrieval_hits", "raw_count": 0, "scene_count": 0},
+            "refinement": {"status": "no_retrieval_hits", "raw_count": 0, "scene_count": 0, "decision_provider": decision_provider},
             "warnings": warnings,
             "inspected_windows": [],
             "stage_usage": stage_usage,
             "ask_settings": _ask_settings(config),
         }
 
-    client = SystemOneClient(config)
+    client = open_decision_client(config)
     try:
         results, refinement, refinement_usage = refine_search_results(
             question, raw_results, repo, config, client=client
         )
         stage_usage.update(refinement_usage)
+        refinement["decision_provider"] = decision_provider
+        served_model = getattr(client, "served_model", None)
+        if served_model:
+            refinement["served_model"] = served_model
+        server_engine = getattr(client, "server_engine", None)
+        if server_engine:
+            refinement["server_engine"] = server_engine
     except RefinementError as exc:
         for stage, usage in exc.stage_usage.items():
             stage_usage[stage] = usage
-        warnings.append("Jev refinement was unavailable; answering from raw retrieval without judged evidence confidence.")
+        decision_label = {"jev": "Jev"}.get(decision_provider, decision_provider)
+        warnings.append(
+            f"{decision_label} refinement was unavailable; answering from raw retrieval "
+            "without judged evidence confidence."
+        )
         llm: OpenAILLM | None = None
         try:
             llm = OpenAILLM(config)
@@ -224,7 +244,7 @@ def ask(
                 "confidence_basis": "unknown",
                 "route": "refinement_fallback_answer_failed",
                 "evidence_status": "answer_unavailable",
-                "refinement": {"status": "provider_fallback", "raw_count": len(raw_results)},
+                "refinement": {"status": "provider_fallback", "raw_count": len(raw_results), "decision_provider": decision_provider},
                 "warnings": warnings,
                 "inspected_windows": [],
                 "stage_usage": stage_usage,
@@ -237,7 +257,7 @@ def ask(
             "confidence_basis": "retrieval_heuristic",
             "route": "refinement_fallback",
             "evidence_status": "raw_unjudged",
-            "refinement": {"status": "provider_fallback", "raw_count": len(raw_results)},
+            "refinement": {"status": "provider_fallback", "raw_count": len(raw_results), "decision_provider": decision_provider},
             "warnings": warnings,
             "inspected_windows": [],
             "stage_usage": stage_usage,
@@ -249,7 +269,7 @@ def ask(
             "answer": "No supported evidence was found for this question in the retrieved video moments.",
             "citations": [],
             "confidence": 0.0,
-            "confidence_basis": "jev_relevance",
+            "confidence_basis": _confidence_basis(decision_provider, "relevance"),
             "route": "refined_no_results",
             "evidence_status": "all_sources_irrelevant",
             "refinement": refinement,
@@ -298,7 +318,7 @@ def ask(
             "answer": answer,
             "citations": citations,
             "confidence": support_probability,
-            "confidence_basis": "jev_answer_support",
+            "confidence_basis": _confidence_basis(decision_provider, "answer_support"),
             "route": "refined",
             "evidence_status": "supported",
             "refinement": refinement,
@@ -341,7 +361,7 @@ def ask(
                 "answer": inspected_answer,
                 "citations": inspected_citations,
                 "confidence": inspected_support,
-                "confidence_basis": "jev_answer_support_after_sampled_frames",
+                "confidence_basis": _confidence_basis(decision_provider, "answer_support_after_sampled_frames"),
                 "route": "vision_inspected",
                 "evidence_status": "sampled_frames_supported",
                 "refinement": refinement,
@@ -361,7 +381,7 @@ def ask(
         "answer": uncertain,
         "citations": citations,
         "confidence": support_probability or 0.0,
-        "confidence_basis": "jev_answer_support" if support_probability is not None else "unknown",
+        "confidence_basis": _confidence_basis(decision_provider, "answer_support") if support_probability is not None else "unknown",
         "route": "refined_uncertain",
         "evidence_status": evidence_status,
         "refinement": refinement,
