@@ -101,23 +101,28 @@ class FakeSystemOne:
         self.calls.append((state, questions))
         if "is_supported" in questions:
             return {"is_supported": {"type": "noul", "noul": self.support}}, self.usage
-        if "start" in questions and "end" in questions:
+        if "start" in questions or "end" in questions:
             self.boundary_calls += 1
-            start_labels = list(questions["start"]["criteria"])
-            end_labels = list(questions["end"]["criteria"])
-            if self.edge_boundaries and self.boundary_calls == 1:
-                start = start_labels[0]
-                end = end_labels[-1]
-            elif self.edge_boundaries:
-                start = "e-5" if "e-5" in start_labels else start_labels[0]
-                end = "e4" if "e4" in end_labels else end_labels[-1]
-            else:
-                start = "e0"
-                end = "e0"
-            return {
-                "start": {"type": "choice", "choice": start, "confidence": 0.8},
-                "end": {"type": "choice", "choice": end, "confidence": 0.7},
-            }, self.usage
+            answers = {}
+            for side in ("start", "end"):
+                if side not in questions:
+                    continue
+                labels = list(questions[side]["criteria"])
+                if self.edge_boundaries and self.boundary_calls == 1:
+                    choice = labels[0] if side == "start" else labels[-1]
+                elif self.edge_boundaries:
+                    if side == "start":
+                        choice = "e-5" if "e-5" in labels else labels[0]
+                    else:
+                        choice = "e4" if "e4" in labels else labels[-1]
+                else:
+                    choice = "e0"
+                answers[side] = {
+                    "type": "choice",
+                    "choice": choice,
+                    "confidence": 0.8 if side == "start" else 0.7,
+                }
+            return answers, self.usage
         answers = {}
         for index, key in enumerate(questions):
             position = self.relevance_offset + index
@@ -174,7 +179,7 @@ def test_boundary_window_is_single_pass_and_configurable(
     # Put the hit in the middle so ±6 has real room on both sides.
     raw[0] = repo.search_fts("scene 5", limit=1, video_id="v1")[0].model_dump()
     fake = FakeSystemOne([0.9], edge_boundaries=True)
-    refined, meta, _ = refine_search_results(
+    _refined, meta, _ = refine_search_results(
         "event",
         raw,
         repo,
@@ -186,6 +191,30 @@ def test_boundary_window_is_single_pass_and_configurable(
     assert len(boundary_questions["start"]["criteria"]) <= 5
     assert len(boundary_questions["end"]["criteria"]) <= 5
     assert meta["scene_count"] == 1
+
+def test_edge_hit_resolves_singleton_side_locally_without_asking(
+    repo: Repository, tmp_path: Path
+) -> None:
+    """A hit at the first temporal event has only `e0` on its start side. A
+    structured provider rejects one-option questions, so that side must be
+    resolved locally and never sent — otherwise every edge hit would fall
+    back with a validation 422."""
+    _seed_video(repo, tmp_path, "v1")
+    raw = [repo.search_fts("scene 0", limit=1, video_id="v1")[0].model_dump()]
+    fake = FakeSystemOne([0.9])
+    refined, meta, _ = refine_search_results(
+        "event",
+        raw,
+        repo,
+        AVConfig(typesafe_api_key="test", embed_model=""),
+        client=fake,
+    )
+    boundary = next(questions for _, questions in fake.calls if "start" in questions or "end" in questions)
+    assert set(boundary) == {"end"}
+    assert fake.boundary_calls == 1
+    assert meta["scene_count"] == 1
+    assert refined[0]["timestamp_sec"] == 0.0
+    assert refined[0]["end_sec"] == 10.0
 
 
 def test_overlap_merge_is_same_video_only_and_ranks_probability_times_score() -> None:
@@ -419,7 +448,7 @@ def test_valid_all_irrelevant_is_no_results_not_raw_fallback(repo: Repository, t
     _seed_video(repo, tmp_path, "v1", prefix="cake")
     fake = FakeSystemOne([0.1] * 30)
     config = AVConfig(typesafe_api_key="test", embed_model="", refine_relevance_min=0.5)
-    with patch("av.search.rag.SystemOneClient", return_value=fake), \
+    with patch("av.search.rag.open_decision_client", return_value=fake), \
          patch("av.search.rag.OpenAILLM", side_effect=AssertionError("answer model must not run")):
         result = ask("cake", repo, config, video_id="v1")
     assert result["route"] == "refined_no_results"
@@ -434,7 +463,7 @@ def test_fast_path_support_skips_vision_and_usage_stays_unknown(
     _seed_video(repo, tmp_path, "v1", prefix="cake")
     fake = FakeSystemOne([0.9] * 30, support=0.88)
     config = AVConfig(typesafe_api_key="test", embed_model="")
-    with patch("av.search.rag.SystemOneClient", return_value=fake), \
+    with patch("av.search.rag.open_decision_client", return_value=fake), \
          patch("av.search.rag.OpenAILLM", FakeLLM), \
          patch("av.search.rag.inspect_with_stronger_vision") as inspect:
         result = ask("cake", repo, config, video_id="v1")
@@ -458,7 +487,7 @@ def test_relevant_sources_can_still_fail_answer_support_and_escalate(
         "usage": {"requests": 1, "input_tokens": None, "output_tokens": None},
         "warnings": [],
     }
-    with patch("av.search.rag.SystemOneClient", return_value=fake), \
+    with patch("av.search.rag.open_decision_client", return_value=fake), \
          patch("av.search.rag.OpenAILLM", FakeLLM), \
          patch("av.search.rag.inspect_with_stronger_vision", return_value=inspection) as inspect:
         result = ask("cake", repo, AVConfig(typesafe_api_key="test", embed_model=""), video_id="v1")
@@ -473,7 +502,7 @@ def test_refinement_outage_falls_back_raw_without_secret_leak(
 ) -> None:
     _seed_video(repo, tmp_path, "v1", prefix="cake")
     config = AVConfig(typesafe_api_key="top-secret", embed_model="")
-    with patch("av.search.rag.SystemOneClient"), \
+    with patch("av.search.rag.open_decision_client"), \
          patch("av.search.rag.refine_search_results", side_effect=RefinementError("top-secret private input")), \
          patch("av.search.rag.OpenAILLM", FakeLLM):
         result = ask("cake", repo, config, video_id="v1")
@@ -550,7 +579,7 @@ def test_refinement_fallback_returns_partial_stage_usage(repo: Repository, tmp_p
         "output_tokens_complete": False,
     }
     error = RefinementError("failed", stage_usage={"relevance": partial})
-    with patch("av.search.rag.SystemOneClient"), \
+    with patch("av.search.rag.open_decision_client"), \
          patch("av.search.rag.refine_search_results", side_effect=error), \
          patch("av.search.rag.OpenAILLM", FakeLLM):
         result = ask(
@@ -577,7 +606,7 @@ def test_refined_answer_failure_preserves_receipts_and_is_sanitized(
             raise RuntimeError("https://private.example/v1 secret-token")
 
     fake = FakeSystemOne([0.9] * 30)
-    with patch("av.search.rag.SystemOneClient", return_value=fake), \
+    with patch("av.search.rag.open_decision_client", return_value=fake), \
          patch("av.search.rag.OpenAILLM", FailingLLM), \
          patch("av.search.rag.judge_answer_support") as support, \
          patch("av.search.rag.inspect_with_stronger_vision") as inspect:

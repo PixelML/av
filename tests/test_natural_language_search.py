@@ -57,7 +57,7 @@ def test_unicode_punctuation_and_fts_operators_are_literal_candidates(repo):
 
 @pytest.mark.parametrize("question", ["What is it?", "?! () :", "Where did the submarine surface?"])
 def test_empty_or_unrelated_question_returns_no_hits_or_model_calls(repo, question):
-    with patch("av.search.rag.SystemOneClient") as judge, patch("av.search.rag.OpenAILLM") as llm:
+    with patch("av.search.rag.open_decision_client") as judge, patch("av.search.rag.OpenAILLM") as llm:
         result = ask(question, repo, AVConfig(typesafe_api_key="test", embed_model=""), video_id="local")
     assert result["route"] == "refined_no_results"
     assert result["citations"] == []
@@ -123,7 +123,7 @@ def test_ask_passes_original_question_to_jev_and_filters_broad_candidates(repo, 
             assert "rental" not in context
             return CompletionResult("The truck was blue", input_tokens=20, output_tokens=5)
 
-    with patch("av.search.rag.SystemOneClient", return_value=Judge()), \
+    with patch("av.search.rag.open_decision_client", return_value=Judge()), \
          patch("av.search.rag.OpenAILLM", side_effect=Answer) as llm:
         result = ask(question, repo, AVConfig(typesafe_api_key="test", embed_model=""), video_id="local")
     assert len(relevance_texts) == 2

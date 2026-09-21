@@ -77,6 +77,19 @@ class AVConfig(BaseSettings):
     typesafe_model: str = Field(default="jev-latest")
     typesafe_timeout_sec: float = Field(default=30.0, gt=0)
     typesafe_max_retries: int = Field(default=1, ge=0, le=3)
+    # Optional self-hosted djev-spark decision endpoint speaking the same
+    # documented /v1/systemone contract. No default endpoint ships with av:
+    # an explicit endpoint selects this lane over hosted System One.
+    djev_endpoint: str = Field(default="")
+    djev_api_key: str = Field(default="")
+    # Advisory request model. djev-spark ignores it and reports the model it
+    # actually served; responses carry that identity into usage records.
+    djev_model: str = Field(default="")
+    # Cold structured reads are slow on long states (upstream documents ~105 s
+    # at 110k tokens), so the default is more generous than the hosted lane's.
+    djev_timeout_sec: float = Field(default=180.0, gt=0)
+    djev_max_retries: int = Field(default=1, ge=0, le=3)
+    djev_seed: int = Field(default=42, ge=0)
     refine_enabled: bool = Field(default=True)
     refine_relevance_min: float = Field(default=0.5, ge=0, le=1)
     refine_support_min: float = Field(default=0.5, ge=0, le=1)
@@ -130,6 +143,12 @@ def get_config(db_path: Path | None = None) -> AVConfig:
         "typesafe_endpoint",
         "typesafe_model",
         "typesafe_timeout_sec",
+        "djev_endpoint",
+        "djev_api_key",
+        "djev_model",
+        "djev_timeout_sec",
+        "djev_max_retries",
+        "djev_seed",
         "typesafe_max_retries",
         "refine_enabled",
         "refine_relevance_min",

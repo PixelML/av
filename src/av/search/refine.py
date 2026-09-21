@@ -8,7 +8,6 @@ completion is presented as Jev.
 
 from __future__ import annotations
 
-import json
 import math
 import time
 from dataclasses import dataclass, field
@@ -66,19 +65,26 @@ def _record_call_usage(usage: dict, call_usage: dict[str, Any] | None) -> None:
         requests=attempts,
         ambiguous_attempts=attempts > 1,
     )
+    # Server-reported identity travels with the receipt so a reader can tell
+    # which runtime actually answered (djev-spark reports the model it served).
+    for key in ("served_model", "server_engine", "served_endpoint_host"):
+        value = cleaned.get(key) if isinstance(cleaned, dict) else None
+        if isinstance(value, str) and value:
+            usage[key] = value
 
 
-def _probability(value: Any, name: str) -> float:
+def _probability(value: Any, name: str, label: str = "System One") -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise RefinementError(f"System One returned an invalid probability for {name}")
+        raise RefinementError(f"{label} returned an invalid probability for {name}")
     value = float(value)
     if not math.isfinite(value) or not 0 <= value <= 1:
-        raise RefinementError(f"System One returned an out-of-range probability for {name}")
+        raise RefinementError(f"{label} returned an out-of-range probability for {name}")
     return value
 
 
 class SystemOneClient:
     """Small synchronous client for the documented TypeSafe System One endpoint."""
+    provider_label = "Jev/System One"
 
     def __init__(self, config: AVConfig, *, session: requests.Session | None = None) -> None:
         if not config.typesafe_api_key:
@@ -341,13 +347,15 @@ def _choice_criteria(labels: list[str], candidates: dict[str, dict]) -> dict:
     return out
 
 
-def _read_choice(answer: Any, name: str, allowed: list[str]) -> tuple[str, float]:
+def _read_choice(
+    answer: Any, name: str, allowed: list[str], label: str = "System One"
+) -> tuple[str, float]:
     if not isinstance(answer, dict) or answer.get("type") != "choice":
-        raise RefinementError(f"System One returned an invalid Choice answer for {name}")
+        raise RefinementError(f"{label} returned an invalid Choice answer for {name}")
     choice = answer.get("choice")
     if choice not in allowed:
-        raise RefinementError(f"System One returned an invalid boundary choice for {name}")
-    confidence = _probability(answer.get("confidence"), f"{name}.confidence")
+        raise RefinementError(f"{label} returned an invalid boundary choice for {name}")
+    confidence = _probability(answer.get("confidence"), f"{name}.confidence", label)
     return str(choice), confidence
 
 
@@ -361,40 +369,66 @@ def _judge_bounds(
 ) -> tuple[float, float, float, str, str, dict]:
     data = _boundary_input(events, hit_index, query, window)
     candidates = data["surrounding_events"]
+    label = getattr(client, "provider_label", "System One")
+
+    def side_question(side: str) -> dict:
+        direction, other = ("earliest", "earlier") if side == "start" else ("latest", "later")
+        return {
+            "type": "choice",
+            "instructions": (
+                f"Select the {direction} candidate that belongs to the same continuous video moment "
+                f"as `hit_event` for the user's `query`. Use e0 when {other} candidates do not belong "
+                "to that moment."
+            ),
+            "criteria": _choice_criteria(data[f"{side}_labels"], candidates),
+        }
+
+    # A side whose only candidate is the hit itself has no alternative to
+    # choose. Structured providers reject one-option questions outright, so
+    # such sides are resolved locally (the scene simply cannot extend that
+    # way) and only sides with a real decision are sent to the provider.
+    forced = {
+        side: data[f"{side}_labels"][0]
+        for side in ("start", "end")
+        if len(data[f"{side}_labels"]) < 2
+    }
     questions = {
-        "start": {
-            "type": "choice",
-            "instructions": "Select the earliest candidate that belongs to the same continuous video moment as `hit_event` for the user's `query`. Use e0 when earlier candidates do not belong to that moment.",
-            "criteria": _choice_criteria(data["start_labels"], candidates),
-        },
-        "end": {
-            "type": "choice",
-            "instructions": "Select the latest candidate that belongs to the same continuous video moment as `hit_event` for the user's `query`. Use e0 when later candidates do not belong to that moment.",
-            "criteria": _choice_criteria(data["end_labels"], candidates),
-        },
+        side: side_question(side) for side in ("start", "end") if side not in forced
     }
-    state = {
-        "query": query,
-        "hit_event": data["hit_event"],
-        "surrounding_events": candidates,
-        "note": "Candidates are ordered temporal events from one video. e0 contains the retrieved hit; negative labels are earlier and positive labels are later.",
-    }
-    try:
-        answers, call_usage = client.ask(state, questions)
-    except RefinementError as exc:
-        _record_client_error(usage, exc)
-        exc.stage_usage["boundary"] = usage
-        raise
-    _record_call_usage(usage, call_usage)
-    try:
-        start_label, start_conf = _read_choice(answers.get("start"), "start", data["start_labels"])
-        end_label, end_conf = _read_choice(answers.get("end"), "end", data["end_labels"])
-    except RefinementError as exc:
-        exc.stage_usage["boundary"] = usage
-        raise
-    start_event = events[hit_index + int(start_label[1:])]
-    end_event = events[hit_index + int(end_label[1:])]
-    return start_event["start"], end_event["end"], min(start_conf, end_conf), start_label, end_label, data
+    resolved: dict[str, str] = dict(forced)
+    confidences: dict[str, float] = {side: 1.0 for side in forced}
+    if questions:
+        state = {
+            "query": query,
+            "hit_event": data["hit_event"],
+            "surrounding_events": candidates,
+            "note": "Candidates are ordered temporal events from one video. e0 contains the retrieved hit; negative labels are earlier and positive labels are later.",
+        }
+        try:
+            answers, call_usage = client.ask(state, questions)
+        except RefinementError as exc:
+            _record_client_error(usage, exc)
+            exc.stage_usage["boundary"] = usage
+            raise
+        _record_call_usage(usage, call_usage)
+        try:
+            for side in questions:
+                resolved[side], confidences[side] = _read_choice(
+                    answers.get(side), side, data[f"{side}_labels"], label
+                )
+        except RefinementError as exc:
+            exc.stage_usage["boundary"] = usage
+            raise
+    start_event = events[hit_index + int(resolved["start"][1:])]
+    end_event = events[hit_index + int(resolved["end"][1:])]
+    return (
+        start_event["start"],
+        end_event["end"],
+        min(confidences.values()),
+        resolved["start"],
+        resolved["end"],
+        data,
+    )
 
 
 def judge_relevance(
@@ -405,6 +439,7 @@ def judge_relevance(
     batch_size: int = 10,
 ) -> tuple[dict[str, float], dict[str, int | None]]:
     usage = new_usage()
+    label = getattr(client, "provider_label", "System One")
     probabilities: dict[str, float] = {}
     for offset in range(0, len(results), batch_size):
         batch = results[offset : offset + batch_size]
@@ -442,8 +477,8 @@ def judge_relevance(
             for key, artifact_id in ids.items():
                 answer = answers.get(key)
                 if not isinstance(answer, dict) or answer.get("type") != "noul":
-                    raise RefinementError(f"System One response is missing Noul answer {key}")
-                probabilities[artifact_id] = _probability(answer.get("noul"), key)
+                    raise RefinementError(f"{label} response is missing Noul answer {key}")
+                probabilities[artifact_id] = _probability(answer.get("noul"), key, label)
         except RefinementError as exc:
             exc.stage_usage["relevance"] = usage
             raise
@@ -577,6 +612,7 @@ def refine_search_results(
     client: SystemOneClient | None = None,
 ) -> tuple[list[dict], dict, dict[str, dict[str, int | None]]]:
     client = client or SystemOneClient(config)
+    label = getattr(client, "provider_label", "System One")
     probabilities, relevance_usage = judge_relevance(
         client,
         query,
@@ -589,7 +625,7 @@ def refine_search_results(
         probability = probabilities.get(artifact_id)
         if probability is None:
             raise RefinementError(
-                "System One omitted a source relevance probability",
+                f"{label} omitted a source relevance probability",
                 stage_usage={"relevance": relevance_usage},
             )
         if probability >= config.refine_relevance_min:
@@ -674,6 +710,7 @@ def judge_answer_support(
         }
     }
     usage = new_usage()
+    label = getattr(client, "provider_label", "System One")
     try:
         answers, raw_usage = client.ask(state, questions)
     except RefinementError as exc:
@@ -684,8 +721,8 @@ def judge_answer_support(
     try:
         answer_data = answers.get("is_supported")
         if not isinstance(answer_data, dict) or answer_data.get("type") != "noul":
-            raise RefinementError("System One response is missing the support Noul")
-        probability = _probability(answer_data.get("noul"), "is_supported")
+            raise RefinementError(f"{label} response is missing the support Noul")
+        probability = _probability(answer_data.get("noul"), "is_supported", label)
     except RefinementError as exc:
         exc.stage_usage["support"] = usage
         raise

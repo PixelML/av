@@ -133,6 +133,10 @@ automatically runs Jev source relevance, configurable bounded scene grouping, an
 synthesis, and a separate answer-support Noul. `--no-refine` preserves legacy RAG
 for one request. Refined responses retain answer/citations/confidence and add route,
 evidence, refinement, warning, inspected-window, and stage-usage metadata.
+With `AV_DJEV_ENDPOINT` set, the same refinement runs against a self-hosted
+[djev-spark](https://github.com/mmastrac/djev-spark) server (same
+`/v1/systemone` contract); the served model and engine are recorded in usage
+receipts, and a djev answer is never presented as a Jev measurement.
 
 ### `av list` / `av info <id>` / `av transcript <id>` / `av export` / `av open <id>`
 See `av <command> --help` for details.
@@ -201,6 +205,12 @@ When a capability is unavailable (e.g. Anthropic has no Whisper), the pipeline s
 | `AV_TYPESAFE_API_KEY` | (none) | Jev/System One key; enables ask refinement by default |
 | `AV_TYPESAFE_ENDPOINT` | `https://api.typesafe.ai/v1/systemone` | Explicit System One endpoint |
 | `AV_TYPESAFE_MODEL` | `jev-latest` | System One model |
+| `AV_DJEV_ENDPOINT` | (none) | Self-hosted djev-spark `/v1/systemone` endpoint; selects the self-hosted decision lane over hosted Jev |
+| `AV_DJEV_API_KEY` | (none) | Bearer key for the djev-spark server (needed only when the server sets `API_KEY`) |
+| `AV_DJEV_MODEL` | (none) | Advisory request model; djev-spark ignores it and reports what it served |
+| `AV_DJEV_TIMEOUT_SEC` | `180` | Per-attempt djev-spark timeout (cold reads on long states are slow) |
+| `AV_DJEV_MAX_RETRIES` | `1` | Explicit retry count for djev-spark requests |
+| `AV_DJEV_SEED` | `42` | Sampler seed sent with every djev-spark decision |
 | `AV_REFINE_RELEVANCE_MIN` | `0.5` | Minimum source-relevance Noul probability |
 | `AV_REFINE_SUPPORT_MIN` | `0.5` | Minimum answer-support Noul probability |
 | `AV_REFINE_MAX_SCENES` | `8` | Maximum merged scenes sent to synthesis |
