@@ -8,7 +8,6 @@ completion is presented as Jev.
 
 from __future__ import annotations
 
-import json
 import math
 import time
 from dataclasses import dataclass, field
@@ -206,6 +205,8 @@ def _artifact_end(artifact: ArtifactRecord | dict) -> float:
 def _ordered_contiguous_events(
     result: dict,
     artifacts: list[ArtifactRecord],
+    *,
+    append_missing_hit: bool = True,
 ) -> tuple[list[dict], int]:
     hit_start = float(result.get("timestamp_sec", 0))
     hit_end = _artifact_end(result)
@@ -220,7 +221,7 @@ def _ordered_contiguous_events(
         }
         for artifact in artifacts
     ]
-    if hit_id and not any(row["artifact_id"] == hit_id for row in rows):
+    if append_missing_hit and hit_id and not any(row["artifact_id"] == hit_id for row in rows):
         rows.append({
             "artifact_id": hit_id,
             "source_type": str(result.get("source_type") or "artifact"),
@@ -256,6 +257,7 @@ def _ordered_contiguous_events(
                 "end": row["end"],
                 "texts": [label],
                 "text": label,
+                "rows": [row],
             })
         else:
             target["start"] = min(target["start"], row["start"])
@@ -264,6 +266,7 @@ def _ordered_contiguous_events(
             if label not in target["texts"]:
                 target["texts"].append(label)
             target["text"] = "\n".join(target["texts"])
+            target["rows"].append(row)
     events.sort(key=lambda event: (event["start"], event["end"]))
     hit_index = next(
         (index for index, event in enumerate(events) if hit_id in event["artifact_ids"]),
@@ -286,6 +289,13 @@ def _ordered_contiguous_events(
             "end": hit_end,
             "texts": [label],
             "text": label,
+            "rows": [{
+                "artifact_id": hit_id,
+                "source_type": str(result.get("source_type") or "artifact"),
+                "start": hit_start,
+                "end": hit_end,
+                "text": str(result.get("text") or ""),
+            }],
         })
         events.sort(key=lambda event: (event["start"], event["end"]))
         hit_index = next(index for index, event in enumerate(events) if hit_id in event["artifact_ids"])

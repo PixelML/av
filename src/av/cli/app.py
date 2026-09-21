@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import typer
 
@@ -25,22 +24,24 @@ def version_cmd() -> None:
 
 # --- Register direct commands ---
 
-from av.cli.ingest import register as register_ingest  # noqa: E402
-from av.cli.search import register as register_search  # noqa: E402
-from av.cli.ask import register as register_ask  # noqa: E402
-from av.cli.list_cmd import register as register_list  # noqa: E402
-from av.cli.info import register as register_info  # noqa: E402
-from av.cli.transcript import register as register_transcript  # noqa: E402
-from av.cli.export import register as register_export  # noqa: E402
-from av.cli.open_cmd import register as register_open  # noqa: E402
-from av.cli.config_cmd import config_app  # noqa: E402
-from av.cli.sentinel import register as register_sentinel  # noqa: E402
-from av.cli.sentinel_doctor import register_doctor  # noqa: E402
-from av.cli.bench import register as register_bench  # noqa: E402
+from av.cli.ask import register as register_ask
+from av.cli.bench import register as register_bench
+from av.cli.clip import register as register_clip
+from av.cli.config_cmd import config_app
+from av.cli.export import register as register_export
+from av.cli.info import register as register_info
+from av.cli.ingest import register as register_ingest
+from av.cli.list_cmd import register as register_list
+from av.cli.open_cmd import register as register_open
+from av.cli.search import register as register_search
+from av.cli.sentinel import register as register_sentinel
+from av.cli.sentinel_doctor import register_doctor
+from av.cli.transcript import register as register_transcript
 
 register_ingest(app)
 register_search(app)
 register_ask(app)
+register_clip(app)
 register_list(app)
 register_info(app)
 register_transcript(app)

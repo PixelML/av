@@ -1,0 +1,454 @@
+{
+  "contract_version": 1,
+  "corpus": "clip-eval/corpus.json",
+  "queries": "clip-eval/queries.json",
+  "query_count": 8,
+  "ingestion_ms": 222.4,
+  "arms": [
+    {
+      "arm": "deterministic",
+      "decide": false,
+      "metrics_per_query": [
+        {
+          "clips_returned": 2,
+          "hits": 1,
+          "precision_at_k": 0.5,
+          "known_moment_recall": 0.5,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": 5.0,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-001",
+          "topic": "quantum error correction",
+          "status": "deterministic_only",
+          "timings": {
+            "prepare_ms": 4.7,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 1,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": null,
+          "absent_topic_fp": 1.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-002",
+          "topic": "cloud credits",
+          "status": "deterministic_only",
+          "timings": {
+            "prepare_ms": 1.3,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 0,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": null,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-003",
+          "topic": "stock market predictions",
+          "status": "no_usable_clips",
+          "timings": {
+            "prepare_ms": 0.4,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 1,
+          "hits": 1,
+          "precision_at_k": 0.5,
+          "known_moment_recall": 1.0,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": 0.0,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-004",
+          "topic": "sourdough starter schedule",
+          "status": "deterministic_only",
+          "timings": {
+            "prepare_ms": 1.6,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 1,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": 0.0,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-005",
+          "topic": "laminating trick",
+          "status": "deterministic_only",
+          "timings": {
+            "prepare_ms": 1.3,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 0,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": null,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-006",
+          "topic": "electric car reviews",
+          "status": "no_usable_clips",
+          "timings": {
+            "prepare_ms": 0.4,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 2,
+          "hits": 1,
+          "precision_at_k": 0.5,
+          "known_moment_recall": 1.0,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": 6.0,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-007",
+          "topic": "harbor fish auction",
+          "status": "deterministic_only",
+          "timings": {
+            "prepare_ms": 2.9,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 0,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": null,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-008",
+          "topic": "space launch",
+          "status": "no_usable_clips",
+          "timings": {
+            "prepare_ms": 0.4,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        }
+      ],
+      "metrics_total": {
+        "queries": 8,
+        "precision_at_k_mean": 0.1875,
+        "known_moment_recall_mean": 0.625,
+        "absent_topic_fp_total": 1.0,
+        "boundary_error_sec_mean": 3.667,
+        "duplication_rate_mean": 0.0,
+        "context_loss_total": 0,
+        "precision_at_k_p50": 0.0,
+        "boundary_error_sec_p50": null,
+        "boundary_error_sec_p95": null
+      },
+      "stage_usage": {
+        "relevance": {
+          "requests": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        },
+        "coherence": {
+          "requests": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        },
+        "visual": {
+          "requests": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        },
+        "boundary": {
+          "requests": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        },
+        "appeal": {
+          "requests": 0,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        }
+      },
+      "timings": {
+        "prepare_ms_total": 13.0,
+        "selection_ms_total": 0.0,
+        "selection_warm_ms_total": 0.0,
+        "render_ms_total": 11558.8
+      },
+      "export": {
+        "requested": true,
+        "clips_exported": 7,
+        "clips_valid": 7
+      },
+      "failures": [],
+      "decision_provider": "none"
+    },
+    {
+      "arm": "jev_mock",
+      "decide": true,
+      "metrics_per_query": [
+        {
+          "clips_returned": 2,
+          "hits": 1,
+          "precision_at_k": 0.5,
+          "known_moment_recall": 0.5,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": 5.0,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-001",
+          "topic": "quantum error correction",
+          "status": "ok",
+          "timings": {
+            "prepare_ms": 3.0,
+            "selection_ms": 0.8,
+            "selection_warm_ms": 0.5,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 0,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": null,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-002",
+          "topic": "cloud credits",
+          "status": "no_usable_clips",
+          "timings": {
+            "prepare_ms": 1.2,
+            "selection_ms": 0.4,
+            "selection_warm_ms": 0.3,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 0,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": null,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-003",
+          "topic": "stock market predictions",
+          "status": "no_usable_clips",
+          "timings": {
+            "prepare_ms": 0.2,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 1,
+          "hits": 1,
+          "precision_at_k": 0.5,
+          "known_moment_recall": 1.0,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": 0.0,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-004",
+          "topic": "sourdough starter schedule",
+          "status": "ok",
+          "timings": {
+            "prepare_ms": 2.5,
+            "selection_ms": 0.3,
+            "selection_warm_ms": 0.2,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 1,
+          "hits": 1,
+          "precision_at_k": 0.5,
+          "known_moment_recall": 1.0,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": 6.0,
+          "duplication_rate": 0.0,
+          "context_loss_count": 1,
+          "query_id": "q-005",
+          "topic": "laminating trick",
+          "status": "ok",
+          "timings": {
+            "prepare_ms": 1.4,
+            "selection_ms": 0.5,
+            "selection_warm_ms": 0.2,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 0,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": null,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-006",
+          "topic": "electric car reviews",
+          "status": "no_usable_clips",
+          "timings": {
+            "prepare_ms": 0.3,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 1,
+          "hits": 1,
+          "precision_at_k": 0.5,
+          "known_moment_recall": 1.0,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": 0.0,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-007",
+          "topic": "harbor fish auction",
+          "status": "ok",
+          "timings": {
+            "prepare_ms": 2.5,
+            "selection_ms": 0.6,
+            "selection_warm_ms": 0.3,
+            "render_ms": 0.0
+          }
+        },
+        {
+          "clips_returned": 0,
+          "hits": 0,
+          "precision_at_k": 0.0,
+          "known_moment_recall": null,
+          "absent_topic_fp": 0.0,
+          "boundary_error_sec": null,
+          "duplication_rate": 0.0,
+          "context_loss_count": 0,
+          "query_id": "q-008",
+          "topic": "space launch",
+          "status": "no_usable_clips",
+          "timings": {
+            "prepare_ms": 0.3,
+            "selection_ms": 0.0,
+            "selection_warm_ms": 0.0,
+            "render_ms": 0.0
+          }
+        }
+      ],
+      "metrics_total": {
+        "queries": 8,
+        "precision_at_k_mean": 0.25,
+        "known_moment_recall_mean": 0.875,
+        "absent_topic_fp_total": 0.0,
+        "boundary_error_sec_mean": 2.75,
+        "duplication_rate_mean": 0.0,
+        "context_loss_total": 1,
+        "precision_at_k_p50": 0.25,
+        "boundary_error_sec_p50": null,
+        "boundary_error_sec_p95": null
+      },
+      "stage_usage": {
+        "relevance": {
+          "requests": 5,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        },
+        "coherence": {
+          "requests": 5,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        },
+        "visual": {
+          "requests": 5,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        },
+        "boundary": {
+          "requests": 9,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        },
+        "appeal": {
+          "requests": 5,
+          "input_tokens": 0,
+          "output_tokens": 0,
+          "input_tokens_complete": true,
+          "output_tokens_complete": true
+        }
+      },
+      "timings": {
+        "prepare_ms_total": 11.4,
+        "selection_ms_total": 2.6,
+        "selection_warm_ms_total": 1.5,
+        "render_ms_total": 8014.5
+      },
+      "export": {
+        "requested": true,
+        "clips_exported": 5,
+        "clips_valid": 5
+      },
+      "failures": [],
+      "decision_provider": "typesafe"
+    }
+  ],
+  "notes": [
+    "Synthetic rights-cleared corpus; labels are frozen and independent of decision scores.",
+    "The jev_mock arm exercises the typed decision pipeline; it is not a Jev quality measurement.",
+    "Percentile timings are reported only when at least five samples support them."
+  ]
+}

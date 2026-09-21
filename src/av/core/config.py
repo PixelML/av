@@ -28,7 +28,7 @@ def _load_config_file() -> dict:
         return {}
     try:
         return json.loads(CONFIG_FILE_PATH.read_text())
-    except Exception:
+    except (OSError, ValueError):
         return {}
 
 
@@ -83,6 +83,15 @@ class AVConfig(BaseSettings):
     refine_max_scenes: int = Field(default=8, ge=1, le=50)
     refine_batch_size: int = Field(default=10, ge=1, le=50)
     refine_context_events: int = Field(default=3, ge=0, le=12)
+
+    # Topic clipping decisions. Relevance/coherence/visual gates are objective
+    # source support; appeal only orders. The request ceiling is an explicit
+    # per-run cap on System One HTTP attempts.
+    clip_relevance_min: float = Field(default=0.6, ge=0, le=1)
+    clip_coherence_min: float = Field(default=0.5, ge=0, le=1)
+    clip_visual_min: float = Field(default=0.3, ge=0, le=1)
+    clip_boundary_conf_min: float = Field(default=0.5, ge=0, le=1)
+    clip_request_cap: int = Field(default=60, ge=1, le=10000)
 
     # Optional stronger sampled-frame inspection after an unsupported answer.
     strong_vision_api_base_url: str = Field(default="")
